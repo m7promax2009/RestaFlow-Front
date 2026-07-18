@@ -8,10 +8,13 @@ import AuthLayout from '../layouts/AuthLayout'
 
 // Sahifalar (har mas'ul o'z feature/pages ichida yaratadi)
 const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'))
-const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'))
+const RegisterPage = lazy(() => import('../features/auth/pages/Register'))
+const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPassword'))
+const OTPPage = lazy(() => import('../features/auth/pages/OTP'))
+const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'))
-const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))      // Abdugani
 // const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))          // Izzat
+// const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))    // Abdugani
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 // const KitchenPage = lazy(() => import('../features/kitchen/pages/KitchenPage')) // Ziyoddila
 // const CashierPage = lazy(() => import('../features/cashier/pages/CashierPage')) // Madina
@@ -22,6 +25,8 @@ export const router = createBrowserRouter([
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      { path: '/forgot-password', element: <ForgotPasswordPage /> },
+      { path: '/otp', element: <OTPPage /> },
     ],
   },
   {
@@ -31,8 +36,9 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: '/', element: <DashboardPage /> },
-          { path: '/tables', element: <TablesPage /> },
+          { path: '/profile', element: <ProfilePage /> },
           // { path: '/menu', element: <MenuPage /> },
+          // { path: '/tables', element: <TablesPage /> },
           // { path: '/orders', element: <OrdersPage /> },
           // { path: '/kitchen', element: <KitchenPage /> },
           // { path: '/cashier', element: <CashierPage /> },
