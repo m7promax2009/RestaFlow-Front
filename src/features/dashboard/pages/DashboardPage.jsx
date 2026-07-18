@@ -1,4 +1,4 @@
-import { FiArrowUpRight, FiClock, FiCheckCircle, FiAlertCircle, FiUsers, FiChevronRight } from 'react-icons/fi'
+import { FiArrowUpRight, FiCheckCircle, FiUsers, FiShoppingCart } from 'react-icons/fi'
 
 const stats = [
   { label: 'Активные заказы', value: '24', detail: '+4 новых', icon: FiShoppingCart, color: 'var(--card-green)' },
