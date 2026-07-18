@@ -8,9 +8,10 @@ import AuthLayout from '../layouts/AuthLayout'
 
 // Sahifalar (har mas'ul o'z feature/pages ichida yaratadi)
 const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'))
+const RegisterPage = lazy(() => import('../features/auth/pages/RegisterPage'))
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'))
+const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))      // Abdugani
 // const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))          // Izzat
-// const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))    // Abdugani
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 // const KitchenPage = lazy(() => import('../features/kitchen/pages/KitchenPage')) // Ziyoddila
 // const CashierPage = lazy(() => import('../features/cashier/pages/CashierPage')) // Madina
@@ -18,7 +19,10 @@ const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPa
 export const router = createBrowserRouter([
   {
     element: <AuthLayout />,
-    children: [{ path: '/login', element: <LoginPage /> }],
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+    ],
   },
   {
     element: <ProtectedRoute />,
@@ -27,8 +31,8 @@ export const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { path: '/', element: <DashboardPage /> },
+          { path: '/tables', element: <TablesPage /> },
           // { path: '/menu', element: <MenuPage /> },
-          // { path: '/tables', element: <TablesPage /> },
           // { path: '/orders', element: <OrdersPage /> },
           // { path: '/kitchen', element: <KitchenPage /> },
           // { path: '/cashier', element: <CashierPage /> },
