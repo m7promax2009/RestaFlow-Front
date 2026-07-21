@@ -17,6 +17,7 @@ export default function LoginForm() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [error, setError] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -44,13 +45,27 @@ export default function LoginForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
       <label>
         Email
-        <input type="email" {...register('email')} />
+        <input type="email" placeholder="siz@gmail.com" autoComplete="email" {...register('email')} />
         {errors.email && <span className="error">{errors.email.message}</span>}
       </label>
 
       <label>
         Parol
-        <input type="password" {...register('password')} />
+        <div className="password-field">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Parol"
+            autoComplete="current-password"
+            {...register('password')}
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? 'Yashirish' : 'Ko‘rsatish'}
+          </button>
+        </div>
         {errors.password && <span className="error">{errors.password.message}</span>}
       </label>
 

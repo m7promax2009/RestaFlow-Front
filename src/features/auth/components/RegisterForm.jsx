@@ -1,25 +1,21 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api'
-
-const schema = z.object({
-  name: z.string().min(2, 'Ism kamida 2 ta belgi bo‘lishi kerak'),
-  email: z.string().email('Email noto‘g‘ri'),
-  password: z.string().min(6, 'Kamida 6 ta belgi bo‘lishi kerak'),
-})
+import { registerSchema } from '../authSchemas'
 
 export default function RegisterForm() {
   const navigate = useNavigate()
   const [error, setError] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: '',
       email: '',
       password: '',
+      phone: '',
     },
   })
 
@@ -37,19 +33,39 @@ export default function RegisterForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
       <label>
         Ism
-        <input type="text" {...register('name')} />
+        <input type="text" placeholder="Ism va familiya" autoComplete="name" {...register('name')} />
         {errors.name && <span className="error">{errors.name.message}</span>}
       </label>
 
       <label>
         Email
-        <input type="email" {...register('email')} />
+        <input type="email" placeholder="siz@gmail.com" autoComplete="email" {...register('email')} />
         {errors.email && <span className="error">{errors.email.message}</span>}
       </label>
 
       <label>
+        Telefon raqam
+        <input type="tel" placeholder="+998 90 123 45 67" autoComplete="tel" {...register('phone')} />
+        {errors.phone && <span className="error">{errors.phone.message}</span>}
+      </label>
+
+      <label>
         Parol
-        <input type="password" {...register('password')} />
+        <div className="password-field">
+          <input
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Parol"
+            autoComplete="new-password"
+            {...register('password')}
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? 'Yashirish' : 'Ko‘rsatish'}
+          </button>
+        </div>
         {errors.password && <span className="error">{errors.password.message}</span>}
       </label>
 

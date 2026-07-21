@@ -148,19 +148,50 @@ p {
   font-weight: 600;
 }
 
-.auth-form input {
+.auth-form input,
+.auth-form select {
   width: 100%;
   padding: 14px 16px;
   border-radius: 16px;
   border: 1px solid #cbd5e1;
   background: #fff7eb;
   color: #0f172a;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.auth-form input:focus {
+.auth-form input:focus,
+.auth-form select:focus {
   outline: none;
   border-color: #d87b1c;
+  background: #fffaf3;
   box-shadow: 0 0 0 4px rgba(216, 123, 28, 0.16);
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  padding-right: 96px;
+}
+
+.auth-form .password-toggle {
+  position: absolute;
+  right: 12px;
+  width: auto;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: none;
+  color: #b55a15;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-form .password-toggle:hover {
+  text-decoration: underline;
 }
 
 .auth-form button {
