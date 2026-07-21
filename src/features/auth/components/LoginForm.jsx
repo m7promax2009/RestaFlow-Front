@@ -28,7 +28,7 @@ export default function LoginForm() {
     setError(null)
     try {
       const response = await authApi.login(values)
-      const data = response.data
+      const data = response.data?.data ?? response.data
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
