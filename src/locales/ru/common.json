@@ -1,0 +1,13 @@
+{
+    "login": "Войти",
+    "email": "Email",
+    "password": "Пароль",
+    "logout": "Выйти",
+    "profile": "Профиль",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "search": "Поиск",
+    "employees": "Сотрудники",
+    "active": "Активен",
+    "inactive": "Неактивен"
+}

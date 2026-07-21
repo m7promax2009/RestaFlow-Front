@@ -10,4 +10,11 @@ export const authApi = {
   forgotPassword: async (payload) => {
     return axios.post('/auth/forgot-password', payload)
   },
+  resetPassword: async (payload) => {
+    // payload: { token, newPassword }
+    return axios.post('/auth/reset-password', payload)
+  },
+  getMe: async () => {
+    return axios.get('/auth/me')
+  },
 }
