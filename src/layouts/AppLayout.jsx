@@ -2,6 +2,7 @@
 // Mas'ul: Ziyoddila.
 import { Outlet } from 'react-router-dom'
 import { FiHome, FiShoppingCart, FiMenu, FiUsers, FiBarChart2, FiSettings } from 'react-icons/fi'
+import { useNotificationsSocket } from '../features/notifications'
 
 const navItems = [
   { label: 'Главная', icon: FiHome },
@@ -15,6 +16,8 @@ const navItems = [
 ]
 
 export default function AppLayout() {
+  useNotificationsSocket()
+
   return (
     <div className="app-layout">
       <aside className="app-sidebar">

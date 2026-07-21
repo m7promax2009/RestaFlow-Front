@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
+import { connectSocket } from '../../../services/socket'
 
 const schema = z.object({
   email: z.string().email('Email noto‘g‘ri'),
@@ -32,6 +33,7 @@ export default function LoginForm() {
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
+      connectSocket(data.accessToken)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
