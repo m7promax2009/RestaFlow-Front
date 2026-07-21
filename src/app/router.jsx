@@ -13,7 +13,7 @@ const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPassw
 const OTPPage = lazy(() => import('../features/auth/pages/OTP'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'))
-// const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))          // Izzat
+const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
 const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 // const KitchenPage = lazy(() => import('../features/kitchen/pages/KitchenPage')) // Ziyoddila
@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/', element: <DashboardPage /> },
           { path: '/profile', element: <ProfilePage /> },
-          // { path: '/menu', element: <MenuPage /> },
+          { path: '/menu', element: <MenuPage /> },
           { path: '/tables', element: <TablesPage /> },
           // { path: '/orders', element: <OrdersPage /> },
           // { path: '/kitchen', element: <KitchenPage /> },

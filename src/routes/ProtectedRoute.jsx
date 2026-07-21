@@ -6,7 +6,14 @@ export default function ProtectedRoute({ roles }) {
   const token = localStorage.getItem('accessToken')
   // const { user } = useAuth() // Fayoz: auth slice'dan
 
-  if (!token) return <Navigate to="/login" replace />
+  // Eski/buzilgan qiymatlarni ("undefined" satri va h.k.) yaroqsiz token sifatida ko'rish
+  const isValidToken = token && token !== 'undefined' && token !== 'null'
+
+  if (!isValidToken) {
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    return <Navigate to="/login" replace />
+  }
 
   // Rol tekshiruvi (kerak bo'lsa):
   // if (roles && !roles.includes(user?.role)) return <Navigate to="/" replace />
