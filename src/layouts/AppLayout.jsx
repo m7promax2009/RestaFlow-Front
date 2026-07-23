@@ -18,6 +18,7 @@ import {
 import { clearCredentials } from '../features/auth/authSlice'
 import { ROLE_LABELS } from '../constants/roles'
 import { useNotificationsSocket } from '../features/notifications'
+import { useAuthSync } from '../hooks/useAuthSync'
 
 const navItems = [
   { label: 'Дашборд', icon: FiHome, path: '/' },
@@ -35,6 +36,7 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth.user)
 
+  useAuthSync() // Abdurahmon — tablar aro logout sinxronlash (Router ichida)
   useNotificationsSocket() // Behruz — real-time bildirishnoma socketi
 
   const handleLogout = () => {

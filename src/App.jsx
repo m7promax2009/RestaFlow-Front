@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
-import { useAuthSync } from './hooks/useAuthSync'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { router } from './app/router'
@@ -8,7 +7,8 @@ import { ToastProvider } from './components/ui'
 import { connectSocket } from './services/socket'
 
 export default function App() {
-  useAuthSync() // Abdurahmon — tablar aro auth holatini sinxronlash
+  // Eslatma: useAuthSync (tablar aro logout) Router ichida bo'lishi shart,
+  // shuning uchun u AppLayout'da chaqiriladi — bu yerda emas (App Router'dan tashqarida).
 
   // Sahifa qayta yuklanganda (F5) token localStorage'da qolgan bo'lsa,
   // socket ham qayta ulanishi kerak — aks holda bildirishnomalar tarixi
