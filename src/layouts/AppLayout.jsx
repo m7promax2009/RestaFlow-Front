@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fi'
 import { clearCredentials } from '../features/auth/authSlice'
 import { ROLE_LABELS } from '../constants/roles'
+import { useNotificationsSocket } from '../features/notifications'
 
 const navItems = [
   { label: 'Дашборд', icon: FiHome, path: '/' },
@@ -33,6 +34,8 @@ export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth.user)
+
+  useNotificationsSocket() // Behruz — real-time bildirishnoma socketi
 
   const handleLogout = () => {
     dispatch(clearCredentials())

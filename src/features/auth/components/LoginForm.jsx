@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
 import { ROLE_HOME } from '../../../constants/roles'
+import { connectSocket } from '../../../services/socket'
 
 const schema = z.object({
   email: z.string().email("Email noto'g'ri"),
@@ -18,6 +19,7 @@ export default function LoginForm() {
   const navigate = useNavigate()
   const location = useLocation()
   const [error, setError] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
@@ -32,6 +34,7 @@ export default function LoginForm() {
       localStorage.setItem('refreshToken', data.refreshToken)
       localStorage.setItem('user', JSON.stringify(data.user))
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
+      connectSocket(data.accessToken) // Behruz — login'da socketni ulash
       // Kelgan sahifa bo'lsa o'shanga (Abdurahmon), bo'lmasa rol bo'yicha uyga (Zulfqor).
       const redirectTo = location.state?.from?.pathname || ROLE_HOME[data.user?.role] || '/'
       navigate(redirectTo, { replace: true })
@@ -60,13 +63,22 @@ export default function LoginForm() {
         <label className="text-sm font-semibold text-[#4A2F37]" htmlFor="password">
           Parol
         </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          className="w-full rounded-2xl border border-[#4A2F37]/15 bg-[#FAF7F4] px-4 py-3 text-[#2A1B22] shadow-sm outline-none transition focus:border-[#4A2F37] focus:ring-4 focus:ring-[#4A2F37]/10"
-          {...register('password')}
-        />
+        <div className="relative">
+          <input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+            className="w-full rounded-2xl border border-[#4A2F37]/15 bg-[#FAF7F4] px-4 py-3 pr-24 text-[#2A1B22] shadow-sm outline-none transition focus:border-[#4A2F37] focus:ring-4 focus:ring-[#4A2F37]/10"
+            {...register('password')}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-[#4A2F37]"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? 'Yashirish' : 'Ko‘rsatish'}
+          </button>
+        </div>
         {errors.password && <p className="text-sm text-rose-600">{errors.password.message}</p>}
       </div>
 

@@ -10,5 +10,4 @@ export const registerSchema = z.object({
     email: z.string().email('Email noto\'g\'ri formatda'),
     password: z.string().min(6, 'Parol kamida 6 belgi bo\'lishi kerak'),
     phone: z.string().min(9, 'Telefon raqam noto\'g\'ri'),
-    role: z.string().min(1, 'Rol tanlanishi shart'),
 })

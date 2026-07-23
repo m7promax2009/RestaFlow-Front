@@ -23,6 +23,7 @@ const WaiterDashboard = lazy(() => import('../features/dashboard/pages/WaiterDas
 const CashierDashboard = lazy(() => import('../features/cashier/pages/CashierDashboard')) // Madina
 const KitchenDashboard = lazy(() => import('../features/kitchen/pages/KitchenDashboard')) // Ziyoddila
 const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage'))
+const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage')) // Behruz
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 
 // '/' ga tushib qolgan foydalanuvchini o'z roliga mos panelga yo'naltiradi.
@@ -57,6 +58,7 @@ export const router = createBrowserRouter([
           { index: true, element: <RoleHomeRedirect /> },
           { path: '/profile', element: <ProfilePage /> },
           { path: '/tables', element: <TablesPage /> },
+          { path: '/notifications', element: <NotificationsPage /> }, // Behruz
           {
             element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.MANAGER]} />,
             children: [{ path: '/admin', element: <AdminDashboard /> }],
@@ -78,6 +80,7 @@ export const router = createBrowserRouter([
             children: [{ path: '/kitchen', element: <KitchenDashboard /> }], // Ziyoddila
           },
           // { path: '/orders', element: <OrdersPage /> },  // Abdugani
+
 
         ],
       },
