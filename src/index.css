@@ -277,7 +277,8 @@ button {
   position: fixed;
   top: 0;
   left: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   border-radius: 0;
   background: linear-gradient(180deg, #2a0e10 0%, #140708 100%);
   box-shadow: inset -12px 0 30px rgba(0, 0, 0, 0.4);
@@ -287,6 +288,17 @@ button {
   justify-content: space-between;
   box-sizing: border-box;
   color: #e8dede;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.app-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.app-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 .sidebar-top {

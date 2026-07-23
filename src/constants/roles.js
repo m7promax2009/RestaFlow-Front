@@ -1,17 +1,31 @@
+// Foydalanuvchi rollari — butun ilova bo'ylab ishlatiladi.
+// Qiymatlar backend User modeli bilan bir xil bo'lishi shart (src/models/User.js).
 export const ROLES = {
   ADMIN: 'admin',
   MANAGER: 'manager',
   WAITER: 'waiter',
-  CHEF: 'cook',
   CASHIER: 'cashier',
+  COOK: 'cook',
+  // Alias — Abdurahmon kodi CHEF ishlatadi (COOK bilan bir xil qiymat).
+  CHEF: 'cook',
 }
 
+// Har bir rol login qilgandan keyin qayerga tushishi kerak.
+export const ROLE_HOME = {
+  [ROLES.ADMIN]: '/admin',
+  [ROLES.MANAGER]: '/manager',
+  [ROLES.WAITER]: '/waiter',
+  [ROLES.CASHIER]: '/cashier',
+  [ROLES.COOK]: '/kitchen',
+}
+
+// Sidebar va profil uchun inson o'qiy oladigan nomlar (o'zbekcha).
 export const ROLE_LABELS = {
   [ROLES.ADMIN]: 'Admin',
   [ROLES.MANAGER]: 'Menejer',
   [ROLES.WAITER]: 'Ofitsiant',
-  [ROLES.CHEF]: 'Oshpaz',
   [ROLES.CASHIER]: 'Kassir',
+  [ROLES.COOK]: 'Oshpaz',
 }
 
 export const ORDER_STATUS = {

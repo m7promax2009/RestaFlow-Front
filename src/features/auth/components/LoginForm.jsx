@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
+import { ROLE_HOME } from '../../../constants/roles'
 
 const schema = z.object({
   email: z.string().email("Email noto'g'ri"),
@@ -29,8 +30,10 @@ export default function LoginForm() {
       const data = response.data?.data ?? response.data
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(data.user))
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
-      const redirectTo = location.state?.from?.pathname || '/'
+      // Kelgan sahifa bo'lsa o'shanga (Abdurahmon), bo'lmasa rol bo'yicha uyga (Zulfqor).
+      const redirectTo = location.state?.from?.pathname || ROLE_HOME[data.user?.role] || '/'
       navigate(redirectTo, { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
