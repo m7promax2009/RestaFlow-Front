@@ -1,17 +1,15 @@
 import { useSelector } from 'react-redux'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
-export default function ProtectedRoute({ roles }) {
+export default function PublicRoute() {
   const location = useLocation()
   const { accessToken } = useSelector((state) => state.auth)
   const token = accessToken || localStorage.getItem('accessToken')
 
-  if (!token) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+  if (token) {
+    const from = location.state?.from?.pathname || '/'
+    return <Navigate to={from} replace />
   }
-
-  // Rol tekshiruvi (kerak bo'lsa):
-  // if (roles && !roles.includes(user?.role)) return <Navigate to="/" replace />
 
   return <Outlet />
 }
