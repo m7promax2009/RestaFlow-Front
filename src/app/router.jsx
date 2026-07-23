@@ -17,13 +17,15 @@ const OTPPage = lazy(() => import('../features/auth/pages/OTP'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
 const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
-const AdminDashboard = lazy(() => import('../features/dashboard/pages/AdminDashboard'))
-const ManagerDashboard = lazy(() => import('../features/dashboard/pages/ManagerDashboard'))
 const WaiterDashboard = lazy(() => import('../features/dashboard/pages/WaiterDashboard'))
-const CashierDashboard = lazy(() => import('../features/cashier/pages/CashierDashboard')) // Madina
 const KitchenDashboard = lazy(() => import('../features/kitchen/pages/KitchenDashboard')) // Ziyoddila
 const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage'))
 const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage')) // Behruz
+const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPage')) // Abdurahmon
+// Madinaning to'liq dashboard'i (grafik + eksport) admin/menejer paneli sifatida.
+const AdminDashboard = lazy(() => import('../features/dashboard/pages/Dashboard')) // Madina
+const ManagerDashboard = AdminDashboard
+const CashierDashboard = lazy(() => import('../features/cashier/pages/Cashier')) // Madina (to'liq kassa)
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 
 // '/' ga tushib qolgan foydalanuvchini o'z roliga mos panelga yo'naltiradi.
@@ -57,8 +59,10 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <RoleHomeRedirect /> },
           { path: '/profile', element: <ProfilePage /> },
+          { path: '/menu', element: <MenuPage /> }, // Izzat — menyu boshqaruvi
           { path: '/tables', element: <TablesPage /> },
           { path: '/notifications', element: <NotificationsPage /> }, // Behruz
+          { path: '/employees', element: <EmployeesPage /> }, // Abdurahmon — xodimlar
           {
             element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.MANAGER]} />,
             children: [{ path: '/admin', element: <AdminDashboard /> }],

@@ -22,13 +22,13 @@ import { useAuthSync } from '../hooks/useAuthSync'
 
 const navItems = [
   { label: 'Дашборд', icon: FiHome, path: '/' },
-  { label: 'Заказы', icon: FiShoppingCart },
+  { label: 'Заказы', icon: FiShoppingCart, path: '/waiter' },
   { label: 'Меню', icon: FiBook, path: '/menu' },
-  { label: 'Бронь столов', icon: FiCalendar },
-  { label: 'Персонал', icon: FiUsers },
-  { label: 'Клиенты', icon: FiUser },
-  { label: 'Отчёты', icon: FiBarChart2 },
-  { label: 'Настройки', icon: FiSettings },
+  { label: 'Бронь столов', icon: FiCalendar, path: '/tables' },
+  { label: 'Персонал', icon: FiUsers, path: '/employees' },
+  { label: 'Уведомления', icon: FiUser, path: '/notifications' },
+  { label: 'Отчёты', icon: FiBarChart2, path: '/admin' },
+  { label: 'Профиль', icon: FiSettings, path: '/profile' },
 ]
 
 export default function AppLayout() {
