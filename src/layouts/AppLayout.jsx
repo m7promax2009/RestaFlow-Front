@@ -1,6 +1,7 @@
 // Asosiy layout — sidebar + navbar + kontent.
 // Mas'ul: Ziyoddila.
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import steakPhoto from '../assets/steyk.png'
 import {
   FiHome,
@@ -12,7 +13,10 @@ import {
   FiBarChart2,
   FiSettings,
   FiChevronDown,
+  FiLogOut,
 } from 'react-icons/fi'
+import { clearCredentials } from '../features/auth/authSlice'
+import { ROLE_LABELS } from '../constants/roles'
 
 const navItems = [
   { label: 'Дашборд', icon: FiHome, path: '/' },
@@ -25,9 +29,19 @@ const navItems = [
   { label: 'Настройки', icon: FiSettings },
 ]
 
-const currentUser = { name: 'Алексей', fullName: 'Алексей Смирнов', role: 'Администратор', avatar: 68 }
-
 export default function AppLayout() {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const user = useSelector((state) => state.auth.user)
+
+  const handleLogout = () => {
+    dispatch(clearCredentials())
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+    navigate('/login', { replace: true })
+  }
+
   return (
     <div className="app-layout">
       <aside className="app-sidebar">
@@ -73,12 +87,17 @@ export default function AppLayout() {
           </div>
 
           <button type="button" className="sidebar-profile">
-            <img src={`https://i.pravatar.cc/72?img=${currentUser.avatar}`} alt={currentUser.fullName} />
+            <img src="https://i.pravatar.cc/72?img=68" alt={user?.name ?? user?.email ?? 'Foydalanuvchi'} />
             <div className="sidebar-profile-text">
-              <strong>{currentUser.fullName}</strong>
-              <span>{currentUser.role}</span>
+              <strong>{user?.name ?? user?.email ?? 'Foydalanuvchi'}</strong>
+              <span>{ROLE_LABELS[user?.role] ?? user?.role}</span>
             </div>
             <FiChevronDown />
+          </button>
+
+          <button type="button" className="sidebar-link" onClick={handleLogout}>
+            <FiLogOut className="sidebar-icon" />
+            <span>Выйти</span>
           </button>
         </div>
       </aside>

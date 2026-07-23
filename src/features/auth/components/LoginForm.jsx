@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
+import { ROLE_HOME } from '../../../constants/roles'
 
 const schema = z.object({
   email: z.string().email('Email noto‘g‘ri'),
@@ -31,8 +32,9 @@ export default function LoginForm() {
       const data = response.data?.data ?? response.data
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
+      localStorage.setItem('user', JSON.stringify(data.user))
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
-      navigate('/')
+      navigate(ROLE_HOME[data.user?.role] ?? '/login')
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
     }

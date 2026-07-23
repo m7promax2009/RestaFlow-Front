@@ -33,6 +33,7 @@ api.interceptors.response.use(
     if (!isValidToken(refreshToken)) {
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
       window.location.assign('/login')
       return Promise.reject(error)
     }
@@ -56,6 +57,7 @@ api.interceptors.response.use(
     } catch (refreshError) {
       localStorage.removeItem('accessToken')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
       window.location.assign('/login')
       return Promise.reject(refreshError)
     }
