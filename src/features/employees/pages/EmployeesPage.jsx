@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 import { getUsers, updateUser } from '../api'
-import { ROLE_LABELS } from '../../../constants/roles'
+import { ROLES, ROLE_LABELS } from '../../../constants/roles'
 import { Input, Table, Button } from '../../../components/ui'
 
 export default function EmployeesPage() {
@@ -33,7 +34,24 @@ export default function EmployeesPage() {
 
     const toggleActive = useMutation({
         mutationFn: ({ id, isActive }) => updateUser(id, { isActive: !isActive }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] })
+            toast.success("Holat yangilandi")
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || "Xatolik yuz berdi")
+        },
+    })
+
+    const changeRole = useMutation({
+        mutationFn: ({ id, role }) => updateUser(id, { role }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] })
+            toast.success("Rol yangilandi")
+        },
+        onError: (err) => {
+            toast.error(err.response?.data?.message || "Rolni yangilashda xatolik")
+        },
     })
 
     const columns = [
@@ -43,9 +61,18 @@ export default function EmployeesPage() {
             key: 'role',
             title: 'Rol',
             render: (row) => (
-                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
-                    {ROLE_LABELS[row.role] ?? row.role}
-                </span>
+                <select
+                    value={row.role}
+                    disabled={changeRole.isPending}
+                    onChange={(e) => changeRole.mutate({ id: row._id, role: e.target.value })}
+                    className="rounded-md border px-2 py-1 text-xs dark:bg-gray-700 dark:text-white"
+                >
+                    {Object.values(ROLES).map((role) => (
+                        <option key={role} value={role}>
+                            {ROLE_LABELS[role]}
+                        </option>
+                    ))}
+                </select>
             ),
         },
         {
@@ -63,6 +90,7 @@ export default function EmployeesPage() {
             render: (row) => (
                 <Button
                     variant={row.isActive ? 'danger' : 'secondary'}
+                    isLoading={toggleActive.isPending}
                     onClick={() => toggleActive.mutate({ id: row._id, isActive: row.isActive })}
                 >
                     {row.isActive ? "O'chirish" : 'Faollashtirish'}
@@ -85,10 +113,11 @@ export default function EmployeesPage() {
                     className="rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
                 >
                     <option value="">Barcha rollar</option>
-                    <option value="admin">Admin</option>
-                    <option value="waiter">Ofitsiant</option>
-                    <option value="cook">Oshpaz</option>
-                    <option value="cashier">Kassir</option>
+                    {Object.values(ROLES).map((role) => (
+                        <option key={role} value={role}>
+                            {ROLE_LABELS[role]}
+                        </option>
+                    ))}
                 </select>
             </div>
 
