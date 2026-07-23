@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 import { useSelector } from 'react-redux'
 import ProtectedRoute from '../routes/ProtectedRoute'
+import PublicRoute from '../routes/PublicRoute'
 import AppLayout from '../layouts/AppLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import { ROLES, ROLE_HOME } from '../constants/roles'
@@ -32,12 +33,17 @@ function RoleHomeRedirect() {
 
 export const router = createBrowserRouter([
   {
-    element: <AuthLayout />,
+    element: <PublicRoute />,
     children: [
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/otp', element: <OTPPage /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: '/login', element: <LoginPage /> },
+          { path: '/register', element: <RegisterPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/otp', element: <OTPPage /> },
+        ],
+      },
     ],
   },
   // Mehmon uchun — login talab qilinmaydi.

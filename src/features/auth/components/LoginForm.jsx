@@ -41,19 +41,44 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
-      <label>
-        Email
-        <input type="email" {...register('email')} />
-        {errors.email && <span className="error">{errors.email.message}</span>}
-      </label>
-      <label>
-        Parol
-        <input type="password" {...register('password')} />
-        {errors.password && <span className="error">{errors.password.message}</span>}
-      </label>
-      {error && <p className="error-message">{error}</p>}
-      <button type="submit" disabled={isSubmitting}>Kirish</button>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-[#4A2F37]" htmlFor="email">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          className="w-full rounded-2xl border border-[#4A2F37]/15 bg-[#FAF7F4] px-4 py-3 text-[#2A1B22] shadow-sm outline-none transition focus:border-[#4A2F37] focus:ring-4 focus:ring-[#4A2F37]/10"
+          {...register('email')}
+        />
+        {errors.email && <p className="text-sm text-rose-600">{errors.email.message}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-[#4A2F37]" htmlFor="password">
+          Parol
+        </label>
+        <input
+          id="password"
+          type="password"
+          autoComplete="current-password"
+          className="w-full rounded-2xl border border-[#4A2F37]/15 bg-[#FAF7F4] px-4 py-3 text-[#2A1B22] shadow-sm outline-none transition focus:border-[#4A2F37] focus:ring-4 focus:ring-[#4A2F37]/10"
+          {...register('password')}
+        />
+        {errors.password && <p className="text-sm text-rose-600">{errors.password.message}</p>}
+      </div>
+
+      {error && <p className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full rounded-2xl bg-[#2A1B22] px-4 py-3 font-semibold text-[#FDF9F6] shadow-lg shadow-[#2A1B22]/20 transition hover:-translate-y-0.5 hover:bg-[#4A2F37] disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {isSubmitting ? 'Kuting...' : 'Kirish'}
+      </button>
     </form>
   )
 }

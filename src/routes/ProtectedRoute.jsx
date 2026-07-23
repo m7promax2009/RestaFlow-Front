@@ -6,8 +6,9 @@ import { ROLE_HOME } from '../constants/roles'
 
 export default function ProtectedRoute({ roles }) {
   const location = useLocation()
-  const token = localStorage.getItem('accessToken')
-  const user = useSelector((state) => state.auth.user)
+  const { user, accessToken } = useSelector((state) => state.auth)
+  // Token avval Redux'dan, bo'lmasa localStorage'dan (Fayoz).
+  const token = accessToken || localStorage.getItem('accessToken')
 
   // Eski/buzilgan qiymatlarni ("undefined" satri va h.k.) yaroqsiz token sifatida ko'rish
   const isValidToken = token && token !== 'undefined' && token !== 'null'
