@@ -1,0 +1,13 @@
+{
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "logout": "Logout",
+    "profile": "Profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "employees": "Employees",
+    "active": "Active",
+    "inactive": "Inactive"
+}

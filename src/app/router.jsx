@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { lazy } from 'react'
 import { useSelector } from 'react-redux'
 import ProtectedRoute from '../routes/ProtectedRoute'
+import PublicRoute from '../routes/PublicRoute'
 import AppLayout from '../layouts/AppLayout'
 import AuthLayout from '../layouts/AuthLayout'
 import { ROLES, ROLE_HOME } from '../constants/roles'
@@ -15,13 +16,16 @@ const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPassw
 const OTPPage = lazy(() => import('../features/auth/pages/OTP'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
-const AdminDashboard = lazy(() => import('../features/dashboard/pages/AdminDashboard'))
-const ManagerDashboard = lazy(() => import('../features/dashboard/pages/ManagerDashboard'))
+const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
 const WaiterDashboard = lazy(() => import('../features/dashboard/pages/WaiterDashboard'))
-const CashierDashboard = lazy(() => import('../features/cashier/pages/CashierDashboard')) // Madina
 const KitchenDashboard = lazy(() => import('../features/kitchen/pages/KitchenDashboard')) // Ziyoddila
 const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage'))
-// const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))    // Abdugani
+const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage')) // Behruz
+const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPage')) // Abdurahmon
+// Madinaning to'liq dashboard'i (grafik + eksport) admin/menejer paneli sifatida.
+const AdminDashboard = lazy(() => import('../features/dashboard/pages/Dashboard')) // Madina
+const ManagerDashboard = AdminDashboard
+const CashierDashboard = lazy(() => import('../features/cashier/pages/Cashier')) // Madina (to'liq kassa)
 // const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))    // Abdugani
 
 // '/' ga tushib qolgan foydalanuvchini o'z roliga mos panelga yo'naltiradi.
@@ -32,12 +36,17 @@ function RoleHomeRedirect() {
 
 export const router = createBrowserRouter([
   {
-    element: <AuthLayout />,
+    element: <PublicRoute />,
     children: [
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/otp', element: <OTPPage /> },
+      {
+        element: <AuthLayout />,
+        children: [
+          { path: '/login', element: <LoginPage /> },
+          { path: '/register', element: <RegisterPage /> },
+          { path: '/forgot-password', element: <ForgotPasswordPage /> },
+          { path: '/otp', element: <OTPPage /> },
+        ],
+      },
     ],
   },
   // Mehmon uchun — login talab qilinmaydi.
@@ -50,7 +59,10 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <RoleHomeRedirect /> },
           { path: '/profile', element: <ProfilePage /> },
-          { path: '/menu', element: <MenuPage /> },
+          { path: '/menu', element: <MenuPage /> }, // Izzat — menyu boshqaruvi
+          { path: '/tables', element: <TablesPage /> },
+          { path: '/notifications', element: <NotificationsPage /> }, // Behruz
+          { path: '/employees', element: <EmployeesPage /> }, // Abdurahmon — xodimlar
           {
             element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.MANAGER]} />,
             children: [{ path: '/admin', element: <AdminDashboard /> }],
@@ -71,8 +83,9 @@ export const router = createBrowserRouter([
             element: <ProtectedRoute roles={[ROLES.COOK, ROLES.ADMIN, ROLES.MANAGER]} />,
             children: [{ path: '/kitchen', element: <KitchenDashboard /> }], // Ziyoddila
           },
-          // { path: '/tables', element: <TablesPage /> },  // Abdugani
           // { path: '/orders', element: <OrdersPage /> },  // Abdugani
+
+
         ],
       },
     ],

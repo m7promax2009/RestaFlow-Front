@@ -1,0 +1,13 @@
+{
+    "login": "Kirish",
+    "email": "Email",
+    "password": "Parol",
+    "logout": "Chiqish",
+    "profile": "Profil",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "search": "Qidirish",
+    "employees": "Xodimlar",
+    "active": "Faol",
+    "inactive": "Faol emas"
+}

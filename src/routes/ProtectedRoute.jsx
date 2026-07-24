@@ -1,12 +1,14 @@
 // Himoyalangan marshrut — token va rolga qarab kirishni cheklaydi.
 // Mas'ul: Ziyoddila (Fayoz bilan auth holati bo'yicha).
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { ROLE_HOME } from '../constants/roles'
 
 export default function ProtectedRoute({ roles }) {
-  const token = localStorage.getItem('accessToken')
-  const user = useSelector((state) => state.auth.user)
+  const location = useLocation()
+  const { user, accessToken } = useSelector((state) => state.auth)
+  // Token avval Redux'dan, bo'lmasa localStorage'dan (Fayoz).
+  const token = accessToken || localStorage.getItem('accessToken')
 
   // Eski/buzilgan qiymatlarni ("undefined" satri va h.k.) yaroqsiz token sifatida ko'rish
   const isValidToken = token && token !== 'undefined' && token !== 'null'
@@ -15,10 +17,11 @@ export default function ProtectedRoute({ roles }) {
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
     localStorage.removeItem('user')
-    return <Navigate to="/login" replace />
+    // Login'dan keyin qaytish uchun kelgan sahifani saqlaymiz (Abdurahmon).
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Rol tekshiruvi — bu marshrut faqat ma'lum rollarga ochiq bo'lsa
+  // Rol tekshiruvi — bu marshrut faqat ma'lum rollarga ochiq bo'lsa (Zulfqor).
   if (roles && !roles.includes(user?.role)) {
     return <Navigate to={ROLE_HOME[user?.role] ?? '/login'} replace />
   }

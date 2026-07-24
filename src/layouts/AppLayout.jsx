@@ -17,22 +17,27 @@ import {
 } from 'react-icons/fi'
 import { clearCredentials } from '../features/auth/authSlice'
 import { ROLE_LABELS } from '../constants/roles'
+import { useNotificationsSocket } from '../features/notifications'
+import { useAuthSync } from '../hooks/useAuthSync'
 
 const navItems = [
   { label: 'Дашборд', icon: FiHome, path: '/' },
-  { label: 'Заказы', icon: FiShoppingCart },
+  { label: 'Заказы', icon: FiShoppingCart, path: '/waiter' },
   { label: 'Меню', icon: FiBook, path: '/menu' },
-  { label: 'Бронь столов', icon: FiCalendar },
-  { label: 'Персонал', icon: FiUsers },
-  { label: 'Клиенты', icon: FiUser },
-  { label: 'Отчёты', icon: FiBarChart2 },
-  { label: 'Настройки', icon: FiSettings },
+  { label: 'Бронь столов', icon: FiCalendar, path: '/tables' },
+  { label: 'Персонал', icon: FiUsers, path: '/employees' },
+  { label: 'Уведомления', icon: FiUser, path: '/notifications' },
+  { label: 'Отчёты', icon: FiBarChart2, path: '/admin' },
+  { label: 'Профиль', icon: FiSettings, path: '/profile' },
 ]
 
 export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth.user)
+
+  useAuthSync() // Abdurahmon — tablar aro logout sinxronlash (Router ichida)
+  useNotificationsSocket() // Behruz — real-time bildirishnoma socketi
 
   const handleLogout = () => {
     dispatch(clearCredentials())
