@@ -14,7 +14,7 @@ export default function LoginPage() {
             </div>
 
             <h1 className="mt-6 text-3xl font-semibold leading-tight sm:text-4xl lg:text-5xl">
-              Buyurtmalarni tezroq boshqarish uchun tizimga kiring
+              Salom, Behruz! 👋
             </h1>
 
             <p className="mt-5 text-sm leading-7 text-[#FAF7F4]/80 sm:text-base">
@@ -29,7 +29,7 @@ export default function LoginPage() {
           <div className="w-full max-w-md">
 
             <h2 className="text-3xl font-semibold text-[#2A1B22] sm:text-4xl">
-              Kirish
+              Xush kelibsiz, Behruz!
             </h2>
 
             <p className="mt-3 text-sm leading-6 text-[#4A2F37]/70">

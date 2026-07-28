@@ -1,218 +1,247 @@
-import { useEffect, useState } from 'react';
-import Chart from 'react-apexcharts';
+// Boshqaruv paneli — /reports/dashboard va /orders dan HAQIQIY ma'lumot.
+//
+// Eslatma: ilgari bu sahifa mock ma'lumot ko'rsatardi va `revenueChange`,
+// `occupiedTables`, `avgCheck` kabi backendda umuman mavjud bo'lmagan maydonlarni
+// kutardi. Endi faqat /reports/dashboard qaytaradigan maydonlar ishlatiladi:
+//   todayRevenue, todayPaymentsCount, todayOrdersCount, activeOrdersCount,
+//   totalProducts, lowStockCount, topProducts[]
+// O'rtacha chek va band stollar shu ma'lumotlardan hisoblab chiqariladi.
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import Chart from 'react-apexcharts'
 import {
+  AlertTriangle,
+  ClipboardList,
   DollarSign,
-  ShoppingBag,
-  Utensils,
+  Package,
   Receipt,
-  ArrowUpRight,
-  ArrowDownRight,
-  FileSpreadsheet,
-  FileText,
-  AlertCircle,
-} from 'lucide-react';
-import { getDashboardStats, getDailySales } from '../../../services/dashboardService';
+  RefreshCw,
+  Utensils,
+} from 'lucide-react'
 
-// Backend hali token talab qiladi va login sahifasi tayyor emas (401 kutilgan holat).
-// Shuning uchun fetch muvaffaqiyatsiz bo'lsa, shu mock ma'lumotga fallback qilamiz.
-const mockStats = {
-  todayRevenue: 2450000,
-  revenueChange: 12.4,
-  activeOrders: 18,
-  activeOrdersChange: 4.2,
-  occupiedTables: 12,
-  totalTables: 20,
-  avgCheck: 136000,
-  avgCheckChange: -1.8,
-};
-
-const mockChart = {
-  categories: ["09:00", "11:00", "13:00", "15:00", "17:00", "19:00", "21:00", "23:00"],
-  series: [450000, 890000, 1200000, 950000, 1400000, 2100000, 1850000, 600000],
-};
-
-// TODO: dashboardService'da "so'nggi faol buyurtmalar" uchun mos endpoint yo'q
-// (faqat getTopProducts bor). Shu jadval hozircha mock holida qoladi.
-const recentOrders = [
-  { id: "1024", table: "Stol #5", waiter: "Alisher", total: "245,000 so'm", status: "Tayyorlanmoqda" },
-  { id: "1025", table: "Stol #12", waiter: "Sardor", total: "112,000 so'm", status: "Tayyor" },
-  { id: "1026", table: "Stol #2", waiter: "Dilnoza", total: "560,000 so'm", status: "To'landi" },
-];
-
-const statusStyles = {
-  "To'landi": "bg-emerald-50 text-emerald-700",
-  "Tayyor": "bg-amber-50 text-amber-700",
-  "Tayyorlanmoqda": "bg-slate-100 text-slate-600",
-};
-
-function formatSom(n) {
-  return `${Number(n ?? 0).toLocaleString()} so'm`;
-}
-
-function formatChange(n) {
-  const num = Number(n ?? 0);
-  return `${num >= 0 ? '+' : ''}${num}%`;
-}
-
-// TODO: haqiqiy backend field nomlari login/token tayyor bo'lgach tasdiqlanishi kerak.
-function buildStatsCards(stats) {
-  return [
-    { id: 1, title: "Bugungi tushum", value: formatSom(stats.todayRevenue), change: formatChange(stats.revenueChange), isPositive: stats.revenueChange >= 0, icon: DollarSign },
-    { id: 2, title: "Faol buyurtmalar", value: String(stats.activeOrders ?? 0), change: formatChange(stats.activeOrdersChange), isPositive: stats.activeOrdersChange >= 0, icon: ShoppingBag },
-    { id: 3, title: "Band stollar", value: `${stats.occupiedTables ?? 0} / ${stats.totalTables ?? 0}`, change: `${stats.totalTables ? Math.round((stats.occupiedTables / stats.totalTables) * 100) : 0}% band`, isPositive: true, icon: Utensils },
-    { id: 4, title: "O'rtacha chek", value: formatSom(stats.avgCheck), change: formatChange(stats.avgCheckChange), isPositive: stats.avgCheckChange >= 0, icon: Receipt },
-  ];
-}
+import { getDashboardStats } from '../../../services/dashboardService'
+import { getOrders } from '../../orders/api'
+import { getTables } from '../../tables/api'
+import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
+import { ORDER_STATUS_LABELS, ORDER_STATUS_TONE, TABLE_STATUS } from '../../../constants/roles'
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+  Skeleton,
+  StatCard,
+} from '../../../components/ui'
 
 export default function Dashboard() {
-  const [stats, setStats] = useState(mockStats);
-  const [chart, setChart] = useState(mockChart);
-  const [usingMock, setUsingMock] = useState(true);
-  const [loading, setLoading] = useState(true);
+  const statsQuery = useQuery({
+    queryKey: ['reports', 'dashboard'],
+    // Backend hisobotlarni `data.report` ichida qaytaradi (boshqa endpointlardek
+    // `data`ning o'zida emas) — kalitni ko'rsatmasak barcha maydon undefined bo'ladi.
+    queryFn: async () => unwrap(await getDashboardStats(), 'report'),
+    refetchInterval: 60_000,
+  })
 
-  useEffect(() => {
-    let cancelled = false;
+  const ordersQuery = useQuery({
+    queryKey: ['orders', 'recent'],
+    queryFn: async () => unwrapList(await getOrders({ limit: 8 }), 'orders'),
+    refetchInterval: 30_000,
+  })
 
-    async function load() {
-      try {
-        const [statsRes, salesRes] = await Promise.all([getDashboardStats(), getDailySales()]);
-        if (cancelled) return;
+  const tablesQuery = useQuery({
+    queryKey: ['tables'],
+    queryFn: async () => unwrapList(await getTables(), 'tables'),
+  })
 
-        if (statsRes.data?.data) {
-          setStats(statsRes.data.data);
-          setUsingMock(false);
-        }
-        if (salesRes.data?.data) {
-          setChart(salesRes.data.data);
-        }
-      } catch (err) {
-        // Token yo'q (401) yoki backend mavjud emas — mock ma'lumot bilan davom etamiz.
-        console.info("Dashboard: real API'dan ma'lumot olinmadi, mock ko'rsatilmoqda.", err?.response?.status ?? err?.message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
+  const stats = statsQuery.data ?? {}
+  const orders = ordersQuery.data ?? []
+  const tables = tablesQuery.data ?? []
 
-    load();
-    return () => { cancelled = true; };
-  }, []);
+  const occupied = tables.filter((t) => t.status === TABLE_STATUS.BUSY).length
+  // O'rtacha chek — bugungi tushumni to'lovlar soniga bo'lamiz (0 ga bo'linishdan himoya).
+  const avgCheck = stats.todayPaymentsCount ? stats.todayRevenue / stats.todayPaymentsCount : 0
 
-  const statsData = buildStatsCards(stats);
+  // `stats.topProducts ?? []` har renderda yangi massiv yaratardi va quyidagi
+  // useMemo hech qachon keshdan foydalana olmasdi.
+  const topProducts = useMemo(() => statsQuery.data?.topProducts ?? [], [statsQuery.data])
 
-  const chartOptions = {
-    chart: { id: 'revenue-chart', type: 'area', toolbar: { show: false } },
-    colors: ['#059669'],
-    stroke: { curve: 'smooth', width: 3 },
-    fill: {
-      type: 'gradient',
-      gradient: { shadeIntensity: 1, opacityFrom: 0.3, opacityTo: 0.05 }
-    },
-    xaxis: { categories: chart.categories },
-    dataLabels: { enabled: false },
-    grid: { borderColor: '#f1f5f9' }
-  };
-  const chartSeries = [{ name: "Tushum (so'm)", data: chart.series }];
+  const chart = useMemo(
+    () => ({
+      options: {
+        chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit' },
+        colors: ['#4f46e5'],
+        plotOptions: { bar: { borderRadius: 6, horizontal: true, barHeight: '60%' } },
+        dataLabels: { enabled: false },
+        xaxis: {
+          categories: topProducts.map((p) => p.name),
+          labels: { style: { colors: '#94a3b8' } },
+        },
+        yaxis: { labels: { style: { colors: '#94a3b8' } } },
+        grid: { borderColor: '#e2e8f0', strokeDashArray: 4 },
+        tooltip: { y: { formatter: (v) => `${v} ta` } },
+      },
+      series: [{ name: 'Sotildi', data: topProducts.map((p) => p.totalQuantity) }],
+    }),
+    [topProducts],
+  )
 
-  const handleExportPDF = () => {
-    alert('PDF eksport ishga tushmoqda...');
-  };
-
-  const handleExportExcel = () => {
-    alert('Excel eksport ishga tushmoqda...');
-  };
+  const isLoading = statsQuery.isLoading
 
   return (
-    <div className="p-6 bg-slate-50 min-h-screen text-slate-800">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Boshqaruv paneli</h1>
-        <p className="text-sm text-slate-500 mt-1">Salom, Madina! Restoranning bugungi ko'rsatkichlari shu yerda.</p>
-      </div>
+    <div>
+      <PageHeader
+        title="Boshqaruv paneli"
+        subtitle="Restoranning bugungi ko'rsatkichlari"
+        actions={
+          <Button
+            variant="secondary"
+            onClick={() => {
+              statsQuery.refetch()
+              ordersQuery.refetch()
+              tablesQuery.refetch()
+            }}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${statsQuery.isFetching ? 'animate-spin' : ''}`} />
+            Yangilash
+          </Button>
+        }
+      />
 
-      {!loading && usingMock && (
-        <div className="mb-6 flex items-center gap-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 px-3 py-2 rounded-lg">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          Hozircha namunaviy (mock) ma'lumot ko'rsatilmoqda — tizimga kirilgach haqiqiy ma'lumot avtomatik yuklanadi.
-        </div>
+      {statsQuery.isError && (
+        <Card className="mb-5 border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/40">
+          <p className="flex items-center gap-2 text-sm text-rose-700 dark:text-rose-300">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            {apiErrorMessage(statsQuery.error, "Hisobot ma'lumotlarini yuklab bo'lmadi")}
+          </p>
+        </Card>
       )}
 
-      {/* Statistika kartalari */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        {statsData.map(stat => {
-          const Icon = stat.icon;
-          const TrendIcon = stat.isPositive ? ArrowUpRight : ArrowDownRight;
-          return (
-            <div key={stat.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{stat.title}</span>
-                <span className="p-2 rounded-lg bg-emerald-50 text-emerald-600">
-                  <Icon className="w-4 h-4" />
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-slate-900 mt-3">{stat.value}</div>
-              <div className={`flex items-center gap-1 text-xs font-semibold mt-1 ${stat.isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                <TrendIcon className="w-3.5 h-3.5" />
-                {stat.change}
-              </div>
-            </div>
-          );
-        })}
+      {/* Ko'rsatkichlar */}
+      <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24" />)
+        ) : (
+          <>
+            <StatCard
+              icon={DollarSign}
+              tone="emerald"
+              label="Bugungi tushum"
+              value={formatSom(stats.todayRevenue)}
+              hint={`${stats.todayPaymentsCount ?? 0} ta to'lov`}
+            />
+            <StatCard
+              icon={ClipboardList}
+              tone="indigo"
+              label="Faol buyurtmalar"
+              value={stats.activeOrdersCount ?? 0}
+              hint={`Bugun jami ${stats.todayOrdersCount ?? 0} ta`}
+            />
+            <StatCard
+              icon={Utensils}
+              tone="amber"
+              label="Band stollar"
+              value={`${occupied} / ${tables.length}`}
+              hint={tables.length ? `${Math.round((occupied / tables.length) * 100)}% band` : '—'}
+            />
+            <StatCard
+              icon={Receipt}
+              tone="indigo"
+              label="O'rtacha chek"
+              value={formatSom(avgCheck)}
+              hint="Bugungi to'lovlar bo'yicha"
+            />
+          </>
+        )}
       </div>
 
-      {/* Grafik */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-6">
-        <h3 className="text-base font-semibold text-slate-900 mb-4">Soatlik tushum analitikasi</h3>
-        <Chart options={chartOptions} series={chartSeries} type="area" height={320} />
-      </div>
+      {/* Ombor ogohlantirishi */}
+      {!isLoading && stats.lowStockCount > 0 && (
+        <Card className="mb-5 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40">
+          <p className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
+            <Package className="h-4 w-4 shrink-0" />
+            <strong>{stats.lowStockCount}</strong> ta mahsulot omborda tugab qolmoqda (5 tadan kam).
+            Jami {stats.totalProducts ?? 0} ta mahsulot.
+          </p>
+        </Card>
+      )}
 
-      {/* Faol buyurtmalar jadvali */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <h3 className="text-base font-semibold text-slate-900">So'nggi faol buyurtmalar</h3>
-          <div className="flex gap-2">
-            <button
-              onClick={handleExportExcel}
-              className="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition"
-            >
-              <FileSpreadsheet className="w-4 h-4" /> Excel
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="flex items-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-lg transition"
-            >
-              <FileText className="w-4 h-4" /> PDF
-            </button>
-          </div>
-        </div>
+      <div className="grid gap-5 lg:grid-cols-2">
+        {/* Eng ko'p sotilgan taomlar */}
+        <Card>
+          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+            Eng ko'p sotilgan taomlar
+          </h2>
+          {isLoading ? (
+            <Skeleton className="h-64 w-full" />
+          ) : topProducts.length === 0 ? (
+            <EmptyState
+              icon={Package}
+              title="Ma'lumot yo'q"
+              description="Yopilgan buyurtmalar bo'lgach statistika shu yerda ko'rinadi."
+            />
+          ) : (
+            <Chart options={chart.options} series={chart.series} type="bar" height={280} />
+          )}
+        </Card>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b-2 border-slate-100 text-slate-500 font-semibold">
-                <th className="py-3 px-4">Buyurtma ID</th>
-                <th className="py-3 px-4">Stol</th>
-                <th className="py-3 px-4">Ofitsiant</th>
-                <th className="py-3 px-4">Summa</th>
-                <th className="py-3 px-4">Holati</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentOrders.map(order => (
-                <tr key={order.id} className="border-b border-slate-100 text-slate-700">
-                  <td className="py-3.5 px-4 font-medium">#{order.id}</td>
-                  <td className="py-3.5 px-4">{order.table}</td>
-                  <td className="py-3.5 px-4">{order.waiter}</td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-900">{order.total}</td>
-                  <td className="py-3.5 px-4">
-                    <span className={`px-3 py-1 rounded-md text-xs font-semibold ${statusStyles[order.status]}`}>
-                      {order.status}
-                    </span>
-                  </td>
-                </tr>
+        {/* So'nggi buyurtmalar */}
+        <Card>
+          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+            So'nggi buyurtmalar
+          </h2>
+
+          {ordersQuery.isLoading ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12" />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          ) : orders.length === 0 ? (
+            <EmptyState icon={ClipboardList} title="Buyurtma yo'q" />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs text-slate-500 dark:border-slate-700">
+                    <th className="pb-2 pr-3 font-semibold">Stol</th>
+                    <th className="pb-2 pr-3 font-semibold">Ofitsiant</th>
+                    <th className="pb-2 pr-3 font-semibold">Summa</th>
+                    <th className="pb-2 pr-3 font-semibold">Holat</th>
+                    <th className="pb-2 font-semibold">Vaqt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr
+                      key={order._id}
+                      className="border-b border-slate-100 last:border-0 dark:border-slate-800"
+                    >
+                      <td className="py-2.5 pr-3 font-medium text-slate-900 dark:text-white">
+                        {order.table?.number ?? '—'}
+                      </td>
+                      <td className="py-2.5 pr-3 text-slate-600 dark:text-slate-300">
+                        {order.waiter?.name ?? '—'}
+                      </td>
+                      <td className="py-2.5 pr-3 font-semibold text-slate-900 dark:text-white">
+                        {formatSom(order.totalAmount)}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <Badge variant={ORDER_STATUS_TONE[order.status]}>
+                          {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 text-xs text-slate-400">
+                        {formatTime(order.createdAt)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
-  );
+  )
 }
