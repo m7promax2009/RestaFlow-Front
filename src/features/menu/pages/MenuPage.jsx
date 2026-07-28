@@ -26,6 +26,7 @@ import ProductModal from '../components/ProductModal'
 import ProductPreviewModal from '../components/ProductPreviewModal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { Skeleton } from '../../../components/ui'
+import './MenuPage.css'
 
 const STORAGE_KEY_CATEGORIES = 'menu_test_categories'
 const STORAGE_KEY_PRODUCTS = 'menu_test_products'
