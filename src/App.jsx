@@ -1,9 +1,8 @@
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+
 import { router } from './app/router'
-import { ToastProvider } from './components/ui'
+import { readToken } from './features/auth/session'
 import { connectSocket } from './services/socket'
 
 export default function App() {
@@ -12,17 +11,12 @@ export default function App() {
 
   // Sahifa qayta yuklanganda (F5) token localStorage'da qolgan bo'lsa,
   // socket ham qayta ulanishi kerak — aks holda bildirishnomalar tarixi
-  // ko'rinadi-yu, lekin yangi real-time xabarlar kelmay qoladi (Behruz).
+  // ko'rinadi-yu, lekin yangi real-time xabarlar kelmay qoladi.
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
+    const token = readToken('accessToken')
     if (token) connectSocket(token)
   }, [])
 
-  return (
-    <>
-      <RouterProvider router={router} />
-      <ToastContainer position="top-right" autoClose={3000} />
-      <ToastProvider />
-    </>
-  )
+  // ToastContainer main.jsx'da bir marta render qilinadi.
+  return <RouterProvider router={router} />
 }

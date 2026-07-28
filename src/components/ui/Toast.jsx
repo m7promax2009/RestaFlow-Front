@@ -1,17 +1,4 @@
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
-
-export function ToastProvider() {
-    return (
-        <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            newestOnTop
-            closeOnClick
-            pauseOnHover
-            theme="colored"
-        />
-    )
-}
-
-export { toast }
+// Toast'lar react-toastify orqali chiqadi. ToastContainer main.jsx'da BIR MARTA
+// render qilinadi — bu yerda faqat `toast` qayta eksport qilinadi, shunda
+// komponentlar UI to'plamidan bitta joydan import qilishi mumkin.
+export { toast } from 'react-toastify'

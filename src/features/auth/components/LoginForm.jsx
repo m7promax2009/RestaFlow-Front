@@ -6,13 +6,31 @@ import { useDispatch } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
+import { saveSession } from '../session'
 import { ROLE_HOME } from '../../../constants/roles'
+import { rolesForPath } from '../../../constants/navigation'
 import { connectSocket } from '../../../services/socket'
 
 const schema = z.object({
   email: z.string().email("Email noto'g'ri"),
   password: z.string().min(6, "Kamida 6 ta belgi bo'lishi kerak"),
 })
+
+/**
+ * Login'dan keyin qayerga o'tishni hal qiladi.
+ *
+ * Kelgan sahifaga (`from`) qaytarish faqat shu rol o'sha sahifani ocha olsagina
+ * mantiqiy. Aks holda quyidagi holat yuzaga keladi: admin /dashboard'da chiqadi →
+ * PrivateRoute /login'ga `from=/dashboard` bilan yuboradi → keyin ofitsiant kiradi
+ * va to'g'ridan-to'g'ri /403 ga tushadi. Ruxsat bo'lmasa rol uyiga yuboramiz.
+ */
+function resolveRedirect(from, role) {
+  if (from) {
+    const allowed = rolesForPath(from)
+    if (allowed.length === 0 || allowed.includes(role)) return from
+  }
+  return ROLE_HOME[role] ?? '/'
+}
 
 export default function LoginForm() {
   const dispatch = useDispatch()
@@ -30,14 +48,10 @@ export default function LoginForm() {
     try {
       const response = await authApi.login(values)
       const data = response.data?.data ?? response.data
-      localStorage.setItem('accessToken', data.accessToken)
-      localStorage.setItem('refreshToken', data.refreshToken)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      saveSession(data)
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
-      connectSocket(data.accessToken) // Behruz — login'da socketni ulash
-      // Kelgan sahifa bo'lsa o'shanga (Abdurahmon), bo'lmasa rol bo'yicha uyga (Zulfqor).
-      const redirectTo = location.state?.from?.pathname || ROLE_HOME[data.user?.role] || '/'
-      navigate(redirectTo, { replace: true })
+      connectSocket(data.accessToken) // login'da socketni ulash
+      navigate(resolveRedirect(location.state?.from?.pathname, data.user?.role), { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
     }
@@ -53,6 +67,7 @@ export default function LoginForm() {
           id="email"
           type="email"
           autoComplete="email"
+          placeholder="behruz@restoflow.uz"
           className="w-full rounded-2xl border border-[#4A2F37]/15 bg-[#FAF7F4] px-4 py-3 text-[#2A1B22] shadow-sm outline-none transition focus:border-[#4A2F37] focus:ring-4 focus:ring-[#4A2F37]/10"
           {...register('email')}
         />

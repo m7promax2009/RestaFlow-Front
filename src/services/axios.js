@@ -53,6 +53,10 @@ api.interceptors.response.use(
       return Promise.reject(error)
     }
 
+    // Refresh token har safar localStorage'dan o'qiladi — modul yuklanganda bir marta
+    // o'qilsa, login'dan keyin kelgan yangi token ko'rinmay qoladi.
+    const refreshToken = localStorage.getItem('refreshToken')
+
     if (!isValidToken(refreshToken)) {
       redirectToLogin()
       return Promise.reject(error)
