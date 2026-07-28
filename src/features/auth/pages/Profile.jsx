@@ -1,14 +1,52 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useQuery, useMutation } from '@tanstack/react-query'
+import { toast } from 'react-toastify'
 import { authApi } from '../api'
 import { ROLE_LABELS } from '../../../constants/roles'
+import { Modal, Input, Button } from '../../../components/ui'
+
+const passwordSchema = z
+  .object({
+    oldPassword: z.string().min(6, "Kamida 6 ta belgi"),
+    newPassword: z.string().min(6, "Kamida 6 ta belgi"),
+    confirmPassword: z.string().min(6, "Kamida 6 ta belgi"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Parollar mos emas",
+    path: ['confirmPassword'],
+  })
 
 export default function ProfilePage() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   const { data: user, isLoading } = useQuery({
     queryKey: ['me'],
     queryFn: async () => {
       const res = await authApi.getMe()
       return res.data?.data?.user ?? res.data?.user ?? res.data
+    },
+  })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({ resolver: zodResolver(passwordSchema) })
+
+  const changePasswordMutation = useMutation({
+    mutationFn: (data) =>
+      authApi.changePassword({ oldPassword: data.oldPassword, newPassword: data.newPassword }),
+    onSuccess: () => {
+      toast.success("Parol muvaffaqiyatli o'zgartirildi")
+      reset()
+      setIsModalOpen(false)
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Parolni o'zgartirishda xatolik")
     },
   })
 
@@ -34,14 +72,45 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      <p className="text-sm text-gray-500">
-        Ma'lumotlarni o'zgartirish hozircha mavjud emas.
-        Parolni unutgan bo'lsangiz,{' '}
-        <Link to="/forgot-password" className="text-blue-600">
-          shu yerdan
-        </Link>{' '}
-        tiklashingiz mumkin.
-      </p>
+      <Button variant="secondary" onClick={() => setIsModalOpen(true)}>
+        Parolni o'zgartirish
+      </Button>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          reset()
+        }}
+        title="Parolni o'zgartirish"
+      >
+        <form
+          onSubmit={handleSubmit((data) => changePasswordMutation.mutate(data))}
+          className="space-y-3"
+        >
+          <Input
+            label="Eski parol"
+            type="password"
+            {...register('oldPassword')}
+            error={errors.oldPassword?.message}
+          />
+          <Input
+            label="Yangi parol"
+            type="password"
+            {...register('newPassword')}
+            error={errors.newPassword?.message}
+          />
+          <Input
+            label="Yangi parolni tasdiqlang"
+            type="password"
+            {...register('confirmPassword')}
+            error={errors.confirmPassword?.message}
+          />
+          <Button type="submit" isLoading={isSubmitting || changePasswordMutation.isPending}>
+            Saqlash
+          </Button>
+        </form>
+      </Modal>
     </div>
   )
 }

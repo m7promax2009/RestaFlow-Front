@@ -17,4 +17,8 @@ export const authApi = {
   getMe: async () => {
     return axios.get('/auth/me')
   },
+  changePassword: async (payload) => {
+    // payload: { oldPassword, newPassword }
+    return axios.post('/auth/change-password', payload)
+  },
 }
