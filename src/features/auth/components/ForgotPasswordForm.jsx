@@ -31,7 +31,7 @@ export default function ForgotPasswordForm() {
     <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
       <label>
         Email
-        <input type="email" {...register('email')} />
+        <input type="email" placeholder="siz@gmail.com" autoComplete="email" {...register('email')} />
         {errors.email && <span className="error">{errors.email.message}</span>}
       </label>
 

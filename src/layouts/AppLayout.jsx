@@ -1,184 +1,170 @@
-// Asosiy layout — sidebar + navbar + kontent.
-// Mas'ul: Ziyoddila. (Abdurahmon: rolga qarab sidebar + dark mode + responsive qo'shildi)
-import { useState, useEffect } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { useSelector, useDispatch } from 'react-redux'
-import steakPhoto from '../assets/steyk.png'
-import {
-  FiHome,
-  FiShoppingCart,
-  FiBook,
-  FiCalendar,
-  FiUsers,
-  FiUser,
-  FiBarChart2,
-  FiSettings,
-  FiChevronDown,
-  FiMenu,
-  FiX,
-  FiSun,
-  FiMoon,
-  FiLogOut,
-} from 'react-icons/fi'
-import { ROLES, ROLE_LABELS } from '../constants/roles'
+// Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
+// Menyu bandlari constants/navigation.js dan olinadi (marshrutlar bilan bir manba).
+import { useEffect, useMemo, useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { Bell, LogOut, Menu, User, X } from 'lucide-react'
+
 import { clearCredentials } from '../features/auth/authSlice'
-
-const navItems = [
-  { label: 'Dashboard', icon: FiHome, path: '/', roles: null },
-  { label: 'Buyurtmalar', icon: FiShoppingCart, path: null, roles: null },
-  { label: 'Menyu', icon: FiBook, path: '/menu', roles: null },
-  { label: 'Bron stollar', icon: FiCalendar, path: '/tables', roles: null },
-  {
-    label: 'Persona',
-    icon: FiUsers,
-    path: '/employees',
-    roles: [ROLES.ADMIN, ROLES.MANAGER],
-  },
-  { label: 'Mijozlar', icon: FiUser, path: null, roles: [ROLES.ADMIN, ROLES.MANAGER] },
-  { label: "Otchyot", icon: FiBarChart2, path: null, roles: [ROLES.ADMIN, ROLES.MANAGER] },
-  { label: 'Sozlamalar', icon: FiSettings, path: null, roles: [ROLES.ADMIN] },
-]
-
-function useDarkMode() {
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    if (saved) return saved === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark)
-    localStorage.setItem('theme', isDark ? 'dark' : 'light')
-  }, [isDark])
-
-  return [isDark, setIsDark]
-}
+import { clearSession } from '../features/auth/session'
+import { navItemsForRole } from '../constants/navigation'
+import { ROLE_LABELS } from '../constants/roles'
+import { useNotificationsSocket } from '../features/notifications'
+import { useAuthSync } from '../hooks/useAuthSync'
+import { disconnectSocket } from '../services/socket'
 
 export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const user = useSelector((state) => state.auth.user)
-  const [isDark, setIsDark] = useDarkMode()
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
-
-  const visibleNavItems = navItems.filter(
-    (item) => !item.roles || item.roles.includes(user?.role),
+  const notifications = useSelector((state) => state.notifications.items)
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.read).length,
+    [notifications],
   )
 
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  useAuthSync() // tablar aro logout sinxronlash
+  useNotificationsSocket() // real-time bildirishnomalar
+
+  const items = useMemo(() => navItemsForRole(user?.role), [user?.role])
+
+  // Sahifa almashganda mobil menyu ochiq qolib ketmasin.
+  useEffect(() => setMobileOpen(false), [location.pathname])
+
   const handleLogout = () => {
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
+    disconnectSocket()
+    clearSession()
     dispatch(clearCredentials())
-    navigate('/login')
+    navigate('/login', { replace: true })
   }
 
-  return (
-    <div className="app-layout flex min-h-screen">
-      {/* Mobil uchun orqa fon (drawer ochiq bo'lganda) */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
-      )}
+  const sidebar = (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between px-5 py-5">
+        <span className="text-lg font-bold tracking-tight text-white">
+          Resto<span className="text-indigo-400">Flow</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          className="text-slate-400 hover:text-white lg:hidden"
+          aria-label="Menyuni yopish"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
 
-      <aside
-        className={`app-sidebar fixed z-40 flex h-full w-64 flex-col transition-transform md:static md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-      >
-        <div className="sidebar-top">
-          <div className="sidebar-brand flex items-center justify-between">
-            <p className="brand-name">RestoFlow</p>
-            <button
-              className="md:hidden"
-              onClick={() => setIsMobileOpen(false)}
-              aria-label="Yopish"
-            >
-              <FiX />
-            </button>
-          </div>
-
-          <nav className="sidebar-nav">
-            {visibleNavItems.map(({ label, icon: Icon, path }) =>
-              path ? (
-                <NavLink
-                  key={label}
-                  to={path}
-                  end={path === '/'}
-                  onClick={() => setIsMobileOpen(false)}
-                  className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-                >
-                  <Icon className="sidebar-icon" />
-                  <span>{label}</span>
-                </NavLink>
-              ) : (
-                <button key={label} className="sidebar-link" type="button">
-                  <Icon className="sidebar-icon" />
-                  <span>{label}</span>
-                </button>
-              ),
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+        {items.map(({ key, path, label, icon: Icon }) => (
+          <NavLink
+            key={key}
+            to={path}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive
+                ? 'bg-indigo-600 text-white'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+              }`
+            }
+          >
+            <Icon className="h-[18px] w-[18px] shrink-0" />
+            <span className="truncate">{label}</span>
+            {key === 'notifications' && unreadCount > 0 && (
+              <span className="ml-auto rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             )}
-          </nav>
-        </div>
+          </NavLink>
+        ))}
+      </nav>
 
-        <div className="sidebar-bottom">
+      <div className="border-t border-slate-800 p-3">
+        <NavLink
+          to="/profile"
+          className="mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+        >
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+            {(user?.name ?? user?.email ?? '?').charAt(0).toUpperCase()}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold text-white">
+              {user?.name ?? user?.email ?? 'Foydalanuvchi'}
+            </span>
+            <span className="block truncate text-xs text-slate-400">
+              {ROLE_LABELS[user?.role] ?? user?.role}
+            </span>
+          </span>
+        </NavLink>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-rose-600/20 hover:text-rose-300"
+        >
+          <LogOut className="h-[18px] w-[18px]" />
+          Chiqish
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* Desktop sidebar */}
+      <aside className="hidden w-64 shrink-0 bg-slate-900 lg:block">{sidebar}</aside>
+
+      {/* Mobil sidebar */}
+      {mobileOpen && (
+        <>
           <button
             type="button"
-            onClick={() => setIsDark((prev) => !prev)}
-            className="sidebar-link flex items-center gap-2"
+            aria-label="Menyuni yopish"
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 lg:hidden">{sidebar}</aside>
+        </>
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 lg:px-6">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+            aria-label="Menyuni ochish"
           >
-            {isDark ? <FiSun className="sidebar-icon" /> : <FiMoon className="sidebar-icon" />}
-            <span>{isDark ? "Yorug' rejim" : "Qorong'i rejim"}</span>
+            <Menu className="h-5 w-5" />
           </button>
 
-          <div className="sidebar-promo">
-            <div className="sidebar-promo-image">
-              <img src={steakPhoto} alt="Steak with wine" />
-            </div>
-            <div className="sidebar-promo-text">
-              <p className="sidebar-promo-title">Yaratamiz atmosfera</p>
-              <p className="sidebar-promo-subtitle">mehmonlaringiz uchun</p>
-              <button type="button" className="sidebar-promo-btn">
-                Batafsil <span>→</span>
-              </button>
-            </div>
-          </div>
+          <span className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+            {items.find((i) => i.path === location.pathname)?.label ?? 'RestoFlow'}
+          </span>
 
-          <div className="sidebar-profile flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/profile')}
-              className="flex flex-1 items-center gap-2 text-left"
+          <div className="ml-auto flex items-center gap-1">
+            <NavLink
+              to="/notifications"
+              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Bildirishnomalar"
             >
-              <img
-                src={`https://i.pravatar.cc/72?u=${user?._id ?? 'guest'}`}
-                alt={user?.name ?? 'Foydalanuvchi'}
-              />
-              <div className="sidebar-profile-text">
-                <strong>{user?.name ?? 'Foydalanuvchi'}</strong>
-                <span>{ROLE_LABELS[user?.role] ?? user?.role}</span>
-              </div>
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              title="Chiqish"
-              className="text-red-400 hover:text-red-500"
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
+              )}
+            </NavLink>
+            <NavLink
+              to="/profile"
+              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label="Profil"
             >
-              <FiLogOut />
-            </button>
+              <User className="h-5 w-5" />
+            </NavLink>
           </div>
-        </div>
-      </aside>
-
-      <div className="app-body flex-1">
-        <header className="flex items-center gap-3 border-b p-3 md:hidden">
-          <button onClick={() => setIsMobileOpen(true)} aria-label="Menyu">
-            <FiMenu size={22} />
-          </button>
-          <span className="font-semibold">RestoFlow</span>
         </header>
-        <main className="app-content">
+
+        <main className="min-w-0 flex-1 p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

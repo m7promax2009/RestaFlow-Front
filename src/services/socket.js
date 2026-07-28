@@ -21,3 +21,5 @@ export const connectSocket = (token) => {
 }
 
 export const disconnectSocket = () => socket.disconnect()
+
+if (import.meta.env.DEV) window.__socket = socket // TEMP: demo uchun

@@ -1,13 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-const storedUser = localStorage.getItem('user')
+// Sahifa yangilanganda (F5) rolni yo'qotmaslik uchun localStorage'dan tiklaymiz.
+const readStoredUser = () => {
+  try {
+    const raw = localStorage.getItem('user')
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
 
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
+  user: readStoredUser(),
   accessToken: localStorage.getItem('accessToken') || null,
   refreshToken: localStorage.getItem('refreshToken') || null,
 }
-
 const authSlice = createSlice({
   name: 'auth',
   initialState,
