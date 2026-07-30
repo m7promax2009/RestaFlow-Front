@@ -7,6 +7,8 @@ import { toast } from 'react-toastify'
 import { getUsers, createUser, updateUser } from '../api'
 import { ROLES, ROLE_LABELS } from '../../../constants/roles'
 import { Input, Table, Button, Modal } from '../../../components/ui'
+import AttendanceTable from '../components/AttendanceTable'
+import AuditLogPage from './AuditLogPage'
 
 const newEmployeeSchema = z.object({
     name: z.string().min(2, "Kamida 2 ta belgi"),
@@ -17,6 +19,7 @@ const newEmployeeSchema = z.object({
 })
 
 export default function EmployeesPage() {
+    const [activeTab, setActiveTab] = useState('employees')
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState('')
     const [page, setPage] = useState(1)
@@ -111,7 +114,7 @@ export default function EmployeesPage() {
             key: 'isActive',
             title: 'Holat',
             render: (row) => (
-                <span className={row.isActive ? 'text-green-600' : 'text-gray-400'}>
+                <span className={row.isActive ? 'text-green-600 font-semibold' : 'text-gray-400'}>
                     {row.isActive ? 'Faol' : "Faol emas"}
                 </span>
             ),
@@ -132,49 +135,92 @@ export default function EmployeesPage() {
     ]
 
     return (
-        <div className="p-4">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-                <Input
-                    placeholder="Qidirish (ism, email)..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-                <select
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                    className="rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="flex border-b border-slate-800 pb-3 gap-3">
+                <button
+                    onClick={() => setActiveTab('employees')}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition ${
+                        activeTab === 'employees'
+                            ? 'bg-amber-500 text-slate-950 shadow-md'
+                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
                 >
-                    <option value="">Barcha rollar</option>
-                    {Object.values(ROLES).map((role) => (
-                        <option key={role} value={role}>
-                            {ROLE_LABELS[role]}
-                        </option>
-                    ))}
-                </select>
-                <Button onClick={() => setIsModalOpen(true)} className="ml-auto">
-                    + Yangi xodim
-                </Button>
+                    👥 Xodimlar Ro'yxati
+                </button>
+                <button
+                    onClick={() => setActiveTab('attendance')}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition ${
+                        activeTab === 'attendance'
+                            ? 'bg-amber-500 text-slate-950 shadow-md'
+                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
+                >
+                    📅 Davomat Hisobi
+                </button>
+                <button
+                    onClick={() => setActiveTab('audit')}
+                    className={`px-4 py-2 text-sm font-bold rounded-xl transition ${
+                        activeTab === 'audit'
+                            ? 'bg-amber-500 text-slate-950 shadow-md'
+                            : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
+                >
+                    🛡️ Audit Log (Tarix)
+                </button>
             </div>
 
-            {isError ? (
-                <p className="text-red-500">Xodimlarni yuklashda xatolik yuz berdi</p>
-            ) : (
-                <Table columns={columns} data={filtered} isLoading={isLoading} emptyMessage="Xodimlar topilmadi" />
+            {activeTab === 'employees' && (
+                <div className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Input
+                            placeholder="Qidirish (ism, email)..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <select
+                            value={roleFilter}
+                            onChange={(e) => setRoleFilter(e.target.value)}
+                            className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-200"
+                        >
+                            <option value="">Barcha rollar</option>
+                            {Object.values(ROLES).map((role) => (
+                                <option key={role} value={role}>
+                                    {ROLE_LABELS[role]}
+                                </option>
+                            ))}
+                        </select>
+                        <Button onClick={() => setIsModalOpen(true)} className="ml-auto">
+                            + Yangi xodim
+                        </Button>
+                    </div>
+
+                    {isError ? (
+                        <p className="text-red-500">Xodimlarni yuklashda xatolik yuz berdi</p>
+                    ) : (
+                        <Table columns={columns} data={filtered} isLoading={isLoading} emptyMessage="Xodimlar topilmadi" />
+                    )}
+
+                    <div className="mt-4 flex justify-center gap-2">
+                        <Button variant="secondary" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+                            Oldingi
+                        </Button>
+                        <span className="flex items-center px-2 text-sm text-gray-400">Sahifa {page}</span>
+                        <Button
+                            variant="secondary"
+                            disabled={!data || data.length < 20}
+                            onClick={() => setPage((p) => p + 1)}
+                        >
+                            Keyingi
+                        </Button>
+                    </div>
+                </div>
             )}
 
-            <div className="mt-4 flex justify-center gap-2">
-                <Button variant="secondary" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-                    Oldingi
-                </Button>
-                <span className="flex items-center px-2 text-sm text-gray-500">Sahifa {page}</span>
-                <Button
-                    variant="secondary"
-                    disabled={!data || data.length < 20}
-                    onClick={() => setPage((p) => p + 1)}
-                >
-                    Keyingi
-                </Button>
-            </div>
+            {activeTab === 'attendance' && (
+                <AttendanceTable onRefresh={() => queryClient.invalidateQueries({ queryKey: ['users'] })} />
+            )}
+
+            {activeTab === 'audit' && <AuditLogPage />}
 
             <Modal
                 isOpen={isModalOpen}

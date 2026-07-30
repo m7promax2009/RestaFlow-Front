@@ -2,11 +2,12 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { Grid3X3, Pencil, Plus, Trash2, Users } from 'lucide-react'
+import { Grid3X3, Pencil, Plus, QrCode, Trash2, Users } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import { createTable, deleteTable, getTables, updateTable } from '../api'
 import { unwrapList, apiErrorMessage } from '../../../lib/api'
+import TableQrModal from '../../qr-menu/components/TableQrModal'
 import {
   ROLES,
   TABLE_STATUS,
@@ -40,6 +41,7 @@ export default function TablesPage() {
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [qrModalTable, setQrModalTable] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
   const tablesQuery = useQuery({
@@ -156,7 +158,7 @@ export default function TablesPage() {
             <Card key={table._id} className={`border-2 ${CARD_STYLES[table.status] ?? ''}`}>
               <div className="flex items-start justify-between">
                 <span className="text-2xl font-bold text-slate-900 dark:text-white">
-                  {table.number}
+                  #{table.number}
                 </span>
                 <Badge variant={TABLE_STATUS_TONE[table.status]}>
                   {TABLE_STATUS_LABELS[table.status] ?? table.status}
@@ -170,38 +172,54 @@ export default function TablesPage() {
                 <p className="mt-0.5 truncate text-xs text-slate-500">{table.location}</p>
               )}
 
-              {canManage && (
-                <div className="mt-3 space-y-2">
-                  <Select
-                    value={table.status}
-                    onChange={(e) => statusMutation.mutate({ id: table._id, status: e.target.value })}
-                    options={Object.values(TABLE_STATUS).map((s) => ({
-                      value: s,
-                      label: TABLE_STATUS_LABELS[s],
-                    }))}
-                  />
-                  <div className="flex gap-1">
-                    <Button variant="ghost" className="flex-1" onClick={() => openEdit(table)}>
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="flex-1"
-                      onClick={() => {
-                        if (window.confirm(`Stol ${table.number} ni o'chirasizmi?`)) {
-                          deleteMutation.mutate(table._id)
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-rose-500" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <div className="mt-3 space-y-2">
+                <Button
+                  variant="secondary"
+                  className="w-full text-xs py-1 flex items-center justify-center gap-1"
+                  onClick={() => setQrModalTable(table)}
+                >
+                  <QrCode className="h-3.5 w-3.5 text-amber-500" /> QR-Kod
+                </Button>
+
+                {canManage && (
+                  <>
+                    <Select
+                      value={table.status}
+                      onChange={(e) => statusMutation.mutate({ id: table._id, status: e.target.value })}
+                      options={Object.values(TABLE_STATUS).map((s) => ({
+                        value: s,
+                        label: TABLE_STATUS_LABELS[s],
+                      }))}
+                    />
+                    <div className="flex gap-1">
+                      <Button variant="ghost" className="flex-1" onClick={() => openEdit(table)}>
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => {
+                          if (window.confirm(`Stol ${table.number} ni o'chirasizmi?`)) {
+                            deleteMutation.mutate(table._id)
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-rose-500" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
             </Card>
           ))}
         </div>
       )}
+
+      <TableQrModal
+        isOpen={!!qrModalTable}
+        onClose={() => setQrModalTable(null)}
+        table={qrModalTable}
+      />
 
       <Modal
         isOpen={modalOpen}
@@ -259,3 +277,4 @@ export default function TablesPage() {
     </div>
   )
 }
+
