@@ -1,10 +1,4 @@
-// Kassa — to'lanmagan buyurtmani tanlash, chekni ko'rish va to'lovni qabul qilish.
-//
-// Eslatma: bu sahifa ilgari qattiq yozilgan "ORD-1042" ID'si va mock buyurtma
-// ustida ishlardi; to'lov usullari ham backend enum'iga mos emas edi
-// (card/cash o'rniga karta/naqd). Bundan tashqari server xatosi yuz berganda ham
-// ekranda "To'lov amalga oshirildi" chiqardi — kassa ekranida bu qabul qilib
-// bo'lmaydigan xatti-harakat. Endi hammasi haqiqiy API ustida ishlaydi.
+// Kassa — GET /api/payments/unpaid-orders, POST /api/payments, Split Bill, ReceiptPrintModal
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
@@ -18,8 +12,8 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { createPayment, getReceipt } from '../api'
-import { getOrders } from '../../orders/api'
+import { createPayment, getReceipt, getUnpaidOrders } from '../api'
+import ReceiptPrintModal from '../components/ReceiptPrintModal'
 import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
 import {
   ORDER_STATUS_LABELS,
@@ -51,55 +45,60 @@ export default function Cashier() {
   const [method, setMethod] = useState(PAYMENT_METHODS.CASH)
   const [splitCount, setSplitCount] = useState(1)
   const [customAmount, setCustomAmount] = useState('')
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
 
-  // To'lanmagan buyurtmalar — backend `paid=false` filtrini qo'llab-quvvatlaydi.
+  // To'lanmagan buyurtmalar — GET /api/payments/unpaid-orders (fallback: /orders?paid=false)
   const unpaidQuery = useQuery({
     queryKey: ['orders', 'unpaid'],
-    queryFn: async () => unwrapList(await getOrders({ paid: 'false', limit: 50 }), 'orders'),
-    refetchInterval: 20_000,
+    queryFn: async () => unwrapList(await getUnpaidOrders(), 'orders'),
+    refetchInterval: 15_000,
   })
 
+  // Tanlangan buyurtma cheki
   const receiptQuery = useQuery({
     queryKey: ['receipt', selectedId],
     queryFn: async () => unwrap(await getReceipt(selectedId), 'receipt'),
     enabled: Boolean(selectedId),
   })
 
+  // To'lov mutation — POST /api/payments
   const paymentMutation = useMutation({
     mutationFn: (amount) =>
       createPayment({
         order: selectedId,
         method,
-        // Summa berilmasa backend qolgan balansni to'liq yopadi.
         ...(amount ? { amount } : {}),
       }),
     onSuccess: () => {
-      toast.success("To'lov qabul qilindi")
+      toast.success("To'lov muvaffaqiyatli qabul qilindi!")
       setCustomAmount('')
+      setSplitCount(1)
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['receipt', selectedId] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })
     },
-    // Muhim: xato bo'lsa muvaffaqiyat ko'rsatilmaydi.
     onError: (error) => toast.error(apiErrorMessage(error, "To'lov amalga oshmadi")),
   })
 
   const unpaid = useMemo(() => unpaidQuery.data ?? [], [unpaidQuery.data])
   const receipt = receiptQuery.data
 
-  // Ro'yxat yangilanganda tanlangan buyurtma yo'qolgan bo'lsa (to'liq to'landi),
-  // tanlovni tozalaymiz — aks holda ekranda "o'lik" chek qolib ketadi.
   useEffect(() => {
     if (selectedId && unpaidQuery.isSuccess && !unpaid.some((o) => o._id === selectedId)) {
-      setSelectedId(null)
+      if (!receipt || receipt.isPaid) {
+        setSelectedId(null)
+      }
     }
-  }, [unpaid, selectedId, unpaidQuery.isSuccess])
+  }, [unpaid, selectedId, unpaidQuery.isSuccess, receipt])
 
   const remaining = receipt?.remainingBalance ?? 0
-  const splitAmount = useMemo(
-    () => (splitCount > 1 ? Math.floor(remaining / splitCount) : remaining),
-    [remaining, splitCount],
-  )
+
+  const splitAmount = useMemo(() => {
+    if (splitCount > 1 && remaining > 0) {
+      return Math.ceil(remaining / splitCount)
+    }
+    return remaining
+  }, [remaining, splitCount])
 
   const handlePay = () => {
     const parsed = customAmount ? Number(customAmount) : null
@@ -116,7 +115,7 @@ export default function Cashier() {
 
   return (
     <div>
-      <PageHeader title="Kassa" subtitle="To'lanmagan buyurtmalarni yakunlash" />
+      <PageHeader title="Kassa" subtitle="To'lanmagan buyurtmalar, hisobni bo'lish va chek bosib chiqarish" />
 
       <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
         {/* To'lanmagan buyurtmalar ro'yxati */}
@@ -161,7 +160,7 @@ export default function Cashier() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-slate-900 dark:text-white">
-                      Stol {order.table?.number ?? '—'}
+                      Stol № {order.table?.number ?? '—'}
                     </p>
                     <p className="truncate text-xs text-slate-500">
                       {order.waiter?.name ?? '—'} · {formatTime(order.createdAt)}
@@ -179,7 +178,7 @@ export default function Cashier() {
           </div>
         </Card>
 
-        {/* Chek va to'lov */}
+        {/* Chek ko'rish va to'lov paneli */}
         {!selectedId ? (
           <Card>
             <EmptyState
@@ -199,13 +198,13 @@ export default function Cashier() {
             </p>
           </Card>
         ) : (
-          <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
-            {/* Chek */}
-            <Card id="receipt-print-area">
+          <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
+            {/* Chek preview */}
+            <Card>
               <div className="mb-4 flex items-start justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                    Stol {receipt?.order?.table?.number ?? '—'}
+                    Stol № {receipt?.order?.table?.number ?? '—'}
                   </h2>
                   <p className="text-xs text-slate-500">
                     Ofitsiant: {receipt?.order?.waiter?.name ?? '—'} ·{' '}
@@ -235,10 +234,10 @@ export default function Cashier() {
 
               <div className="mt-4 space-y-1.5 border-t border-slate-200 pt-4 text-sm dark:border-slate-800">
                 <Row label="Buyurtma summasi" value={formatSom(receipt?.order?.totalAmount)} />
-                <Row label="To'langan" value={formatSom(receipt?.paidTotal)} />
+                <Row label="To'langan summa" value={formatSom(receipt?.paidTotal)} />
                 <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-900 dark:border-slate-800 dark:text-white">
-                  <span>Qolgan</span>
-                  <span>{formatSom(remaining)}</span>
+                  <span>Qolgan balans</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">{formatSom(remaining)}</span>
                 </div>
               </div>
 
@@ -263,7 +262,7 @@ export default function Cashier() {
             {/* To'lov paneli */}
             <Card className="h-fit space-y-4">
               <h3 className="border-b border-slate-200 pb-3 text-sm font-semibold text-slate-900 dark:border-slate-800 dark:text-white">
-                To'lov usuli
+                To'lov usuli va Split Bill
               </h3>
 
               <div className="grid grid-cols-2 gap-2">
@@ -287,11 +286,9 @@ export default function Cashier() {
                 })}
               </div>
 
-              {/* Hisobni bo'lish — backend bir buyurtmaga bir nechta to'lovni
-                  qo'llab-quvvatlaydi, shuning uchun har bir ulush alohida yoziladi. */}
               <div>
                 <p className="mb-2 flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-                  <Users className="h-3.5 w-3.5" /> Hisobni bo'lish
+                  <Users className="h-3.5 w-3.5 text-indigo-500" /> Hisobni bo'lish (Split Bill)
                 </p>
                 <div className="flex gap-1.5">
                   {[1, 2, 3, 4].map((num) => (
@@ -300,28 +297,27 @@ export default function Cashier() {
                       type="button"
                       onClick={() => {
                         setSplitCount(num)
-                        setCustomAmount(num > 1 ? String(Math.floor(remaining / num)) : '')
+                        setCustomAmount(num > 1 && remaining > 0 ? String(Math.ceil(remaining / num)) : '')
                       }}
                       className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold transition ${
                         splitCount === num
-                          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                          : 'border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
+                          ? 'bg-indigo-600 text-white'
+                          : 'border border-slate-200 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
                       }`}
                     >
-                      {num}
+                      {num === 1 ? 'Teng' : `${num} kishi`}
                     </button>
                   ))}
                 </div>
-                {splitCount > 1 && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Har biriga: <strong>{formatSom(splitAmount)}</strong> — har ulush alohida
-                    to'lov sifatida yoziladi.
+                {splitCount > 1 && remaining > 0 && (
+                  <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                    Har bir kishiga ulush: <strong>{formatSom(splitAmount)}</strong>
                   </p>
                 )}
               </div>
 
               <Input
-                label="To'lov summasi"
+                label="To'lov summasi (so'm)"
                 type="number"
                 min={1}
                 max={remaining}
@@ -339,13 +335,19 @@ export default function Cashier() {
                 {remaining <= 0 ? "To'liq to'langan" : "To'lovni qabul qilish"}
               </Button>
 
-              <Button variant="secondary" className="w-full" onClick={() => window.print()}>
-                <Printer className="mr-2 h-4 w-4" /> Chekni chop etish
+              <Button variant="secondary" className="w-full" onClick={() => setIsReceiptModalOpen(true)}>
+                <Printer className="mr-2 h-4 w-4" /> Chekni ko'rish / Chop etish
               </Button>
             </Card>
           </div>
         )}
       </div>
+
+      <ReceiptPrintModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
+        receipt={receipt}
+      />
     </div>
   )
 }
