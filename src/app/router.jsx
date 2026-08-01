@@ -34,6 +34,7 @@ const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
 const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
 const ReservationsPage = lazy(() => import('../features/reservations/pages/ReservationsPage'))
 const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPage'))
+const AuditLogPage = lazy(() => import('../features/employees/pages/AuditLogPage'))
 const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 
@@ -44,6 +45,7 @@ const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 // yozilmasa, buildProtectedRoutes uni jimgina tashlab ketmaydi — dev rejimida
 // konsolga ogohlantirish chiqadi.
 const PAGE_BY_KEY = {
+  audit: <AuditLogPage />,
   dashboard: <DashboardPage />,
   orders: <OrdersPage />,
   waiter: <WaiterPage />,
