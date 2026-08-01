@@ -79,7 +79,7 @@ export const NEXT_ORDER_STATUS = {
 
 // ─── Stol holati ────────────────────────────────────────────────────────────
 export const TABLE_STATUS = {
-  FREE: 'available',
+  FREE: 'free',
   BUSY: 'occupied',
   RESERVED: 'reserved',
 }
