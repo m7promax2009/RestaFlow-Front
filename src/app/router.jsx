@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components */
 // Marshrutlar daraxti.
 //
 // Arxitektura qoidasi: har bir himoyalangan sahifaning ROLLARI shu faylda emas,
