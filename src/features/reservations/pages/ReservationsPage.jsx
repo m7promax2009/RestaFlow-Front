@@ -41,6 +41,14 @@ const EMPTY_FORM = {
   status: RESERVATION_STATUS.PENDING,
 }
 
+const formatLocalDatetime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const tzOffsetMs = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 16)
+}
+
 export default function ReservationsPage() {
   const queryClient = useQueryClient()
   const role = useSelector((state) => state.auth.user?.role)
@@ -75,7 +83,7 @@ export default function ReservationsPage() {
       if (editing) {
         return updateReservation(editing._id, {
           status: form.status,
-          date: new Date(form.date).toISOString(),
+          date: form.date,
           guests: Number(form.guests),
           notes: form.notes.trim(),
         })
@@ -84,7 +92,7 @@ export default function ReservationsPage() {
         customerName: form.customerName.trim(),
         customerPhone: form.customerPhone.trim(),
         table: form.table,
-        date: new Date(form.date).toISOString(),
+        date: form.date,
         guests: Number(form.guests),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       })
@@ -127,8 +135,7 @@ export default function ReservationsPage() {
       customerName: reservation.customerName ?? '',
       customerPhone: reservation.customerPhone ?? '',
       table: reservation.table?._id ?? reservation.table ?? '',
-      // datetime-local "YYYY-MM-DDTHH:mm" formatini kutadi.
-      date: reservation.date ? new Date(reservation.date).toISOString().slice(0, 16) : '',
+      date: reservation.date ? formatLocalDatetime(reservation.date) : '',
       guests: reservation.guests ?? 2,
       notes: reservation.notes ?? '',
       status: reservation.status ?? RESERVATION_STATUS.PENDING,
