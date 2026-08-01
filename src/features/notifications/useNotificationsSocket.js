@@ -81,12 +81,13 @@ export default function useNotificationsSocket() {
         }
 
         socket.on('order:ready', handleOrderReady)
-        socket.on('table:updated', loadTables)
+        // Backend canonical event name — docs/table-status.md (section 3)
+        socket.on('table:status_updated', loadTables)
 
         return () => {
             cancelled = true
             socket.off('order:ready', handleOrderReady)
-            socket.off('table:updated', loadTables)
+            socket.off('table:status_updated', loadTables)
         }
     }, [dispatch, user])
 }
