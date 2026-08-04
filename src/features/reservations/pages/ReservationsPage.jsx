@@ -58,11 +58,21 @@ export default function ReservationsPage() {
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
-  const reservationsQuery = useQuery({
-    queryKey: ['reservations'],
-    queryFn: async () => unwrapList(await getReservations({ limit: 100 }), 'reservations'),
-  })
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
 
+  const reservationsQuery = useQuery({
+    queryKey: ['reservations', startDate, endDate],
+    queryFn: async () =>
+      unwrapList(
+        await getReservations({
+          limit: 100,
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+        }),
+        'reservations',
+      ),
+  })
   const tablesQuery = useQuery({
     queryKey: ['tables'],
     queryFn: async () => unwrapList(await getTables(), 'tables'),
@@ -171,6 +181,34 @@ export default function ReservationsPage() {
           </Button>
         }
       />
+
+      <Card className="mb-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+              Boshlanish sanasi
+            </label>
+            <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+              Yakuniy sana
+            </label>
+            <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          {(startDate || endDate) && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setStartDate('')
+                setEndDate('')
+              }}
+            >
+              Tozalash
+            </Button>
+          )}
+        </div>
+      </Card>
 
       {reservationsQuery.isLoading ? (
         <div className="space-y-3">
