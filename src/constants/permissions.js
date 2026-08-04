@@ -12,7 +12,7 @@ const PERMISSIONS = {
         'orders:view',
     ],
     [ROLES.WAITER]: ['tables:view', 'orders:create', 'orders:view'],
-    [ROLES.CHEF]: ['orders:view', 'kitchen:update'],
+    [ROLES.COOK]: ['orders:view', 'kitchen:update'],
     [ROLES.CASHIER]: ['orders:view', 'cashier:process'],
 }
 
