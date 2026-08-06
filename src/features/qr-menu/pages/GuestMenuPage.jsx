@@ -62,34 +62,37 @@ export default function GuestMenuPage() {
     return new Date(`${date}T${time}:00`).toISOString()
   }, [date, time])
 
-  useEffect(() => {
+  const fetchAvailability = useCallback(async () => {
     if (!isoDateTime) return
-    let cancelled = false
     setTablesLoading(true)
-    getTableAvailability(isoDateTime)
-      .then((res) => {
-        if (cancelled) return
-        const payload = res.data?.data ?? res.data
-        setTables(payload.tables ?? [])
-      })
-      .catch(() => {
-        if (!cancelled) toast.error("Zal plani yuklanmadi. Sahifani yangilab ko'ring.")
-      })
-      .finally(() => {
-        if (!cancelled) setTablesLoading(false)
-      })
-    return () => {
-      cancelled = true
+    try {
+      const res = await getTableAvailability(isoDateTime)
+      const payload = res.data?.data ?? res.data
+      setTables(payload.tables ?? [])
+    } catch {
+      toast.error("Zal plani yuklanmadi. Sahifani yangilab ko'ring.")
+    } finally {
+      setTablesLoading(false)
     }
   }, [isoDateTime])
 
   useEffect(() => {
+    fetchAvailability()
+  }, [fetchAvailability])
+
+  useEffect(() => {
+    // Faqat "Zal" bosqichida ishlaydi — stol boshqa mehmon tomonidan band
+    // qilinsa, tanlovni tozalaydi. Bron allaqachon yuborilgandan keyin (menyu/
+    // tasdiqlash/muvaffaqiyat bosqichlarida) tables yangilanishi tanlangan
+    // stolni "yo'qotib qo'ymasligi" kerak — aks holda muvaffaqiyat ekranida
+    // stol raqami yo'qolib qoladi.
+    if (step !== 'hall') return
     setSelectedTable((prev) => {
       if (!prev) return prev
       const fresh = tables.find((t) => t._id === prev._id)
       return fresh && !fresh.isReserved ? fresh : null
     })
-  }, [tables])
+  }, [tables, step])
 
   useEffect(() => {
     setMenuLoading(true)
@@ -149,6 +152,13 @@ export default function GuestMenuPage() {
       })
       const payload = res.data?.data ?? res.data
       setReservation(payload.reservation)
+      // Bron qilingan stolni darhol "band" deb belgilaymiz (server bilan ham
+      // fon rejimida qayta tekshiramiz) — aks holda foydalanuvchi "Yana bron
+      // qilish"ni bosganda o'sha stol hali ham bo'sh ko'rinib qolar edi.
+      setTables((prev) =>
+        prev.map((t) => (t._id === selectedTable._id ? { ...t, isReserved: true } : t))
+      )
+      fetchAvailability()
       setStep('success')
     } catch (err) {
       const status = err.response?.status

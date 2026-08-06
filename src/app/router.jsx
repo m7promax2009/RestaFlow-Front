@@ -16,7 +16,7 @@ import AuthLayout from '../layouts/AuthLayout'
 import { NAV_ITEMS } from '../constants/navigation'
 import { ROLE_HOME } from '../constants/roles'
 
-// ─── Ochiq sahifalar ────────────────────────────────────────────────────────
+// ─── Ochiq sahifalar ─────────────────────────────────────────────
 const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'))
 const RegisterPage = lazy(() => import('../features/auth/pages/Register'))
 const ForgotPasswordPage = lazy(() => import('../features/auth/pages/ForgotPassword'))
@@ -24,7 +24,7 @@ const ResetPasswordPage = lazy(() => import('../features/auth/pages/ResetPasswor
 const OTPPage = lazy(() => import('../features/auth/pages/OTP'))
 const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage'))
 
-// ─── Himoyalangan sahifalar ─────────────────────────────────────────────────
+// ─── Himoyalangan sahifalar ─────────────────────────────────────
 const DashboardPage = lazy(() => import('../features/dashboard/pages/Dashboard'))
 const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))
 const WaiterPage = lazy(() => import('../features/orders/pages/WaiterPage'))
@@ -34,6 +34,7 @@ const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
 const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
 const ReservationsPage = lazy(() => import('../features/reservations/pages/ReservationsPage'))
 const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPage'))
+const AuditLogPage = lazy(() => import('../features/employees/pages/AuditLogPage'))
 const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 
@@ -44,6 +45,7 @@ const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 // yozilmasa, buildProtectedRoutes uni jimgina tashlab ketmaydi — dev rejimida
 // konsolga ogohlantirish chiqadi.
 const PAGE_BY_KEY = {
+  audit: <AuditLogPage />,
   dashboard: <DashboardPage />,
   orders: <OrdersPage />,
   waiter: <WaiterPage />,

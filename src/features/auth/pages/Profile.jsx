@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { KeyRound, LogOut, Mail, Phone, ShieldCheck, User } from 'lucide-react'
 import { toast } from 'react-toastify'
-
 import { authApi } from '../api'
 import { clearSession } from '../session'
 import { clearCredentials } from '../authSlice'
@@ -33,9 +32,6 @@ export default function ProfilePage() {
   const changePasswordMutation = useMutation({
     mutationFn: () => authApi.changePassword({ oldPassword, newPassword }),
     onSuccess: () => {
-      // Backend parol almashganda barcha refresh tokenlarni bekor qiladi
-      // (auth.service.js: user.refreshToken = null), shuning uchun qaytadan
-      // kirish talab qilinadi — foydalanuvchini shu yerda ogohlantiramiz.
       toast.success('Parol yangilandi. Iltimos, qaytadan kiring.')
       disconnectSocket()
       clearSession()
