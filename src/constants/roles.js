@@ -39,6 +39,7 @@ export const ORDER_STATUS = {
   READY: 'tayyor',
   SERVED: 'berildi',
   CLOSED: 'yopilgan',
+  CANCELLED: 'bekor_qilingan',
 }
 
 export const ORDER_STATUS_LIST = [
@@ -47,6 +48,7 @@ export const ORDER_STATUS_LIST = [
   ORDER_STATUS.READY,
   ORDER_STATUS.SERVED,
   ORDER_STATUS.CLOSED,
+  ORDER_STATUS.CANCELLED,
 ]
 
 export const ORDER_STATUS_LABELS = {
@@ -55,6 +57,7 @@ export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.READY]: 'Tayyor',
   [ORDER_STATUS.SERVED]: 'Berildi',
   [ORDER_STATUS.CLOSED]: 'Yopilgan',
+  [ORDER_STATUS.CANCELLED]: 'Bekor qilingan',
 }
 
 // Badge ranglari (components/ui/Badge variantlari).
@@ -64,6 +67,7 @@ export const ORDER_STATUS_TONE = {
   [ORDER_STATUS.READY]: 'success',
   [ORDER_STATUS.SERVED]: 'neutral',
   [ORDER_STATUS.CLOSED]: 'neutral',
+  [ORDER_STATUS.CANCELLED]: 'danger',
 }
 
 // Statusni faqat oldinga surish mumkin — UI shu ketma-ketlikka tayanadi.

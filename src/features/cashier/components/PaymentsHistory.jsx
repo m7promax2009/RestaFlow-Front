@@ -20,7 +20,6 @@ import {
   PAYMENT_METHOD_LABELS,
 } from '../../../constants/roles'
 import {
-  Badge,
   Button,
   Card,
   EmptyState,

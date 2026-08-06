@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertOctagon,
   Banknote,
   CheckCircle,
   CreditCard,
@@ -15,10 +16,12 @@ import {
 import { toast } from 'react-toastify'
 
 import { createPayment, getReceipt, getUnpaidOrders } from '../api'
+import { updateOrderStatus } from '../../orders/api'
 import ReceiptPrintModal from '../components/ReceiptPrintModal'
 import PaymentsHistory from '../components/PaymentsHistory'
 import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
 import {
+  ORDER_STATUS,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TONE,
   PAYMENT_METHODS,
@@ -50,6 +53,7 @@ export default function Cashier() {
   const [splitCount, setSplitCount] = useState(1)
   const [customAmount, setCustomAmount] = useState('')
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   // To'lanmagan buyurtmalar — GET /api/payments/unpaid-orders (fallback: /orders?paid=false)
   const unpaidQuery = useQuery({
@@ -83,6 +87,19 @@ export default function Cashier() {
       queryClient.invalidateQueries({ queryKey: ['payments'] })
     },
     onError: (error) => toast.error(apiErrorMessage(error, "To'lov amalga oshmadi")),
+  })
+
+  // Buyurtmani bekor qilish mutation
+  const cancelMutation = useMutation({
+    mutationFn: () => updateOrderStatus(selectedId, ORDER_STATUS.CANCELLED),
+    onSuccess: () => {
+      toast.info("Buyurtma bekor qilindi")
+      setShowCancelConfirm(false)
+      setSelectedId(null)
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['reports'] })
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Buyurtmani bekor qilib bo'lmadi")),
   })
 
   const unpaid = useMemo(() => unpaidQuery.data ?? [], [unpaidQuery.data])
@@ -187,6 +204,7 @@ export default function Cashier() {
                       setSelectedId(order._id)
                       setCustomAmount('')
                       setSplitCount(1)
+                      setShowCancelConfirm(false)
                     }}
                     className={`flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-0 dark:border-slate-800 ${
                       selectedId === order._id
@@ -374,6 +392,42 @@ export default function Cashier() {
                 <Button variant="secondary" className="w-full" onClick={() => setIsReceiptModalOpen(true)}>
                   <Printer className="mr-2 h-4 w-4" /> Chekni ko'rish / Chop etish
                 </Button>
+
+                {/* Buyurtmani bekor qilish */}
+                <div className="border-t border-slate-200 pt-3 dark:border-slate-800">
+                  {!showCancelConfirm ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowCancelConfirm(true)}
+                      className="w-full text-center text-xs font-semibold text-rose-600 hover:underline dark:text-rose-400"
+                    >
+                      Buyurtmani bekor qilish
+                    </button>
+                  ) : (
+                    <div className="space-y-2 rounded-xl bg-rose-50 p-3 dark:bg-rose-950/40">
+                      <p className="flex items-center gap-1.5 text-xs font-medium text-rose-700 dark:text-rose-300">
+                        <AlertOctagon className="h-4 w-4 shrink-0" />
+                        Buyurtmani rostdan ham bekor qilmoqchimisiz?
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          className="h-8 flex-1 text-xs"
+                          onClick={() => setShowCancelConfirm(false)}
+                        >
+                          Yo'q
+                        </Button>
+                        <Button
+                          className="h-8 flex-1 bg-rose-600 text-xs text-white hover:bg-rose-700"
+                          isLoading={cancelMutation.isPending}
+                          onClick={() => cancelMutation.mutate()}
+                        >
+                          Ha, bekor qilish
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </Card>
             </div>
           )}
