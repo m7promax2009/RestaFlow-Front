@@ -105,7 +105,7 @@ export default function WaiterPage() {
   }
 
   const activeOrders = (activeOrdersQuery.data ?? []).filter(
-    (o) => o.status !== ORDER_STATUS.CLOSED,
+    (o) => o.status !== ORDER_STATUS.CLOSED && o.status !== ORDER_STATUS.CANCELLED,
   )
 
   return (

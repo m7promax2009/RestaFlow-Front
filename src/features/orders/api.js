@@ -13,3 +13,6 @@ export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/status
 
 export const transferOrderTable = (id, table) =>
   api.patch(`/orders/${id}/transfer-table`, { table })
+
+export const cancelOrder = (id, reason) =>
+  api.patch(`/orders/${id}/cancel`, { reason })
