@@ -354,3 +354,4 @@ function CancelOrderModal({ order, onClose, onConfirm, isLoading }) {
       />
     </Modal>
   )
+}
