@@ -16,6 +16,7 @@ import {
   Package,
   Receipt,
   RefreshCw,
+  Send,
   Utensils,
 } from 'lucide-react'
 
@@ -34,7 +35,25 @@ import {
   StatCard,
 } from '../../../components/ui'
 
+import { useState } from 'react'
+import { toast } from 'react-toastify'
+import api from '../../../services/axios'
+
 export default function Dashboard() {
+  const [isSendingTelegram, setIsSendingTelegram] = useState(false)
+
+  const handleSendTelegram = async () => {
+    setIsSendingTelegram(true)
+    try {
+      await api.post('/reports/telegram-daily-report')
+      toast.success('Hisobot Telegram botga muvaffaqiyatli yuborildi! 📲')
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Telegram'ga yuborishda xatolik yuz berdi"))
+    } finally {
+      setIsSendingTelegram(false)
+    }
+  }
+
   const statsQuery = useQuery({
     queryKey: ['reports', 'dashboard'],
     // Backend hisobotlarni `data.report` ichida qaytaradi (boshqa endpointlardek
@@ -94,17 +113,27 @@ export default function Dashboard() {
         title="Boshqaruv paneli"
         subtitle="Restoranning bugungi ko'rsatkichlari"
         actions={
-          <Button
-            variant="secondary"
-            onClick={() => {
-              statsQuery.refetch()
-              ordersQuery.refetch()
-              tablesQuery.refetch()
-            }}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${statsQuery.isFetching ? 'animate-spin' : ''}`} />
-            Yangilash
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              isLoading={isSendingTelegram}
+              onClick={handleSendTelegram}
+            >
+              <Send className="mr-2 h-4 w-4 text-sky-500" />
+              Telegram'ga yuborish
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                statsQuery.refetch()
+                ordersQuery.refetch()
+                tablesQuery.refetch()
+              }}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${statsQuery.isFetching ? 'animate-spin' : ''}`} />
+              Yangilash
+            </Button>
+          </div>
         }
       />
 
