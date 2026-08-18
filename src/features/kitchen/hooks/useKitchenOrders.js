@@ -3,7 +3,7 @@
 // Mas'ul: Ziyodulla.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { socket, connectSocket, disconnectSocket } from '../../../services/socket'
-import { fetchKitchenOrders, updateOrderStatus } from '../api'
+import { fetchKitchenOrders, updateOrderStatus, normalizeKitchenOrder } from '../api'
 import { MOCK_ORDERS } from '../mockData'
 import { ORDER_STATUS } from '../../../constants/roles'
 
@@ -14,11 +14,25 @@ export function useKitchenOrders() {
   const [connection, setConnection] = useState('connecting') // connecting | live | offline | demo
   const isDemo = useRef(false)
 
+  const reloadOrders = useCallback(async () => {
+    try {
+      const data = await fetchKitchenOrders()
+      setOrders(data.filter((o) => BOARD_STATUSES.includes(o.status)))
+    } catch (err) {
+      console.warn('Failed to fetch kitchen orders:', err)
+    }
+  }, [])
+
   const upsertOrder = useCallback((incoming) => {
+    const normalized = normalizeKitchenOrder(incoming)
+    if (!normalized) return
     setOrders((prev) => {
-      const exists = prev.some((o) => o.id === incoming.id)
-      if (!exists) return [incoming, ...prev]
-      return prev.map((o) => (o.id === incoming.id ? { ...o, ...incoming } : o))
+      const exists = prev.some((o) => o.id === normalized.id)
+      if (!BOARD_STATUSES.includes(normalized.status)) {
+        return prev.filter((o) => o.id !== normalized.id)
+      }
+      if (!exists) return [normalized, ...prev]
+      return prev.map((o) => (o.id === normalized.id ? { ...o, ...normalized } : o))
     })
   }, [])
 
@@ -53,24 +67,34 @@ export function useKitchenOrders() {
 
     const handleConnect = () => setConnection('live')
     const handleDisconnect = () => setConnection('offline')
-    const handleNewOrder = (order) => upsertOrder(order)
-    const handleStatusChanged = (order) => upsertOrder(order)
+    const handleNewOrder = (order) => {
+      if (order && order.orderId) reloadOrders()
+      else upsertOrder(order)
+    }
+    const handleStatusChanged = (order) => {
+      if (order && order.orderId) reloadOrders()
+      else upsertOrder(order)
+    }
 
     socket.on('connect', handleConnect)
     socket.on('disconnect', handleDisconnect)
     socket.on('connect_error', handleDisconnect)
     socket.on('order:new', handleNewOrder)
+    socket.on('kitchen:new_order', reloadOrders)
     socket.on('order:statusChanged', handleStatusChanged)
+    socket.on('order:status_changed', handleStatusChanged)
 
     return () => {
       socket.off('connect', handleConnect)
       socket.off('disconnect', handleDisconnect)
       socket.off('connect_error', handleDisconnect)
       socket.off('order:new', handleNewOrder)
+      socket.off('kitchen:new_order', reloadOrders)
       socket.off('order:statusChanged', handleStatusChanged)
+      socket.off('order:status_changed', handleStatusChanged)
       disconnectSocket()
     }
-  }, [upsertOrder])
+  }, [upsertOrder, reloadOrders])
 
   const setStatus = useCallback(
     async (orderId, status) => {
