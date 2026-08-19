@@ -32,6 +32,14 @@ export const NAV_ITEMS = [
     inSidebar: true,
   },
   {
+    key: 'reports',
+    path: '/reports',
+    label: 'Hisobotlar & Analitika',
+    icon: ScrollText,
+    roles: STAFF,
+    inSidebar: true,
+  },
+  {
     key: 'audit',
     path: '/audit',
     label: 'Audit jurnali',

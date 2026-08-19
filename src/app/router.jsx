@@ -27,6 +27,7 @@ const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage
 
 // ─── Himoyalangan sahifalar ─────────────────────────────────────
 const DashboardPage = lazy(() => import('../features/dashboard/pages/Dashboard'))
+const ReportsPage = lazy(() => import('../features/reports/pages/ReportsPage'))
 const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))
 const WaiterPage = lazy(() => import('../features/orders/pages/WaiterPage'))
 const KitchenPage = lazy(() => import('../features/kitchen/pages/KitchenPage'))
@@ -48,6 +49,7 @@ const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 const PAGE_BY_KEY = {
   audit: <AuditLogPage />,
   dashboard: <DashboardPage />,
+  reports: <ReportsPage />,
   orders: <OrdersPage />,
   waiter: <WaiterPage />,
   kitchen: <KitchenPage />,
