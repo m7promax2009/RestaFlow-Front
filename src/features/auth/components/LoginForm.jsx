@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDispatch } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { authApi } from '../api'
+import { authApi, getAuthErrorMessage } from '../api'
 import { setCredentials } from '../authSlice'
 import { saveSession } from '../session'
 import { ROLE_HOME } from '../../../constants/roles'
@@ -53,7 +53,7 @@ export default function LoginForm() {
       connectSocket(data.accessToken) // login'da socketni ulash
       navigate(resolveRedirect(location.state?.from?.pathname, data.user?.role), { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
+      setError(getAuthErrorMessage(err, 'Tizimga kirishda xatolik yuz berdi'))
     }
   }
 

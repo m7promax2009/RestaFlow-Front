@@ -3,15 +3,17 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTables, updateTableStatus, updateTable, setSelectedTable } from '../store/tableStore';
 
-export const useTables = () => {
+export const useTables = ({ enabled = true } = {}) => {
   const dispatch = useDispatch();
   const { tables, selectedTable, loading, error } = useSelector(
-    (state) => state.tables
+    // The current application store does not mount the legacy tables slice.
+    // TableMap2D can still receive API tables as props in picker mode.
+    (state) => state.tables ?? { tables: [], selectedTable: null, loading: false, error: null }
   );
 
   useEffect(() => {
-    dispatch(fetchTables());
-  }, [dispatch]);
+    if (enabled) dispatch(fetchTables());
+  }, [dispatch, enabled]);
 
   const changeStatus = async (id, status) => {
     try {

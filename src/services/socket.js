@@ -2,7 +2,8 @@
 // Mas'ul: Ziyoddila (infra). Foydalanadi: kitchen, orders, notifications.
 import { io } from 'socket.io-client'
 
-const URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+// Development traffic is proxied by Vite together with HTTP API calls.
+const URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? window.location.origin : '')
 
 export const socket = io(URL, {
   autoConnect: false,
@@ -13,7 +14,7 @@ export const socket = io(URL, {
 //   order:new             — yangi buyurtma (oshxona)
 //   order:statusChanged   — status o'zgardi
 //   order:ready           — tayyor (ofitsiantga)
-//   table:updated         — stol holati
+//   table:status_updated — stol holati (backend kanonik nomi)
 //   notification:new      — yangi bildirishnoma
 export const connectSocket = (token) => {
   socket.auth = { token }

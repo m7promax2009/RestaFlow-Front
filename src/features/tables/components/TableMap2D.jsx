@@ -15,8 +15,16 @@ const LEGEND = [
   TABLE_STATUS.CLEANING,
 ].map((status) => ({ status, label: TABLE_STATUS_LABELS[status], color: TABLE_STATUS_COLORS[status] }));
 
-const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalSelected }) => {
-  const { tables, loading, error, updateTableData, selectTable } = useTables();
+const TableMap2D = ({
+  onTableClick,
+  onOrderTransferred,
+  selectedTable: externalSelected,
+  tables: externalTables,
+  pickerMode = false,
+}) => {
+  const tableState = useTables({ enabled: !pickerMode });
+  const { loading, error, updateTableData, selectTable } = tableState;
+  const tables = externalTables ?? tableState.tables;
   const [hoveredTable, setHoveredTable] = useState(null);
   const [editingTable, setEditingTable] = useState(null);
   const [transferringTable, setTransferringTable] = useState(null);
@@ -45,6 +53,12 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
   }, [tables, zoneFilter]);
 
   const handleTableClick = (table) => {
+    // Reservation screen uses the map purely to choose a table. Do not run
+    // the normal order/occupancy interactions in this mode.
+    if (pickerMode) {
+      onTableClick?.(table);
+      return;
+    }
     if (table.status === TABLE_STATUS.AVAILABLE) {
       setOccupyingTable(table);
       return;
@@ -163,9 +177,10 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
                     onClick={() => handleTableClick(table)}
                     onEdit={() => setEditingTable(table)}
                     onTransfer={() => setTransferringTable(table)}
-                    isSelected={selected?.id === table.id}
-                    isHovered={hoveredTable?.id === table.id}
+                    isSelected={(selected?.id ?? selected?._id) === (table.id ?? table._id)}
+                    isHovered={(hoveredTable?.id ?? hoveredTable?._id) === (table.id ?? table._id)}
                     onHover={setHoveredTable}
+                    pickerMode={pickerMode}
                   />
                 ))}
               </div>
@@ -183,7 +198,7 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
         </div>
       </div>
 
-      {editingTable && (
+      {!pickerMode && editingTable && (
         <EditTableModal
           table={editingTable}
           onClose={() => setEditingTable(null)}
@@ -194,7 +209,7 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
         />
       )}
 
-      {transferringTable && (
+      {!pickerMode && transferringTable && (
         <TransferTableModal
           sourceTable={transferringTable}
           tables={tables}
@@ -203,7 +218,7 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
         />
       )}
 
-      {occupyingTable && (
+      {!pickerMode && occupyingTable && (
         <OccupyTableModal
           table={occupyingTable}
           onClose={() => setOccupyingTable(null)}
@@ -214,7 +229,7 @@ const TableMap2D = ({ onTableClick, onOrderTransferred, selectedTable: externalS
   );
 };
 
-const TableSeat = ({ table, onClick, onEdit, onTransfer, isSelected, isHovered, onHover }) => {
+const TableSeat = ({ table, onClick, onEdit, onTransfer, isSelected, isHovered, onHover, pickerMode }) => {
   const color = TABLE_STATUS_COLORS[table.status];
   const canTransfer = table.status === TABLE_STATUS.OCCUPIED;
   const capacity = table.capacity || 4;
@@ -261,7 +276,7 @@ const TableSeat = ({ table, onClick, onEdit, onTransfer, isSelected, isHovered, 
         )}
       </div>
 
-      <div className="mt-2 flex gap-1.5">
+      {!pickerMode && <div className="mt-2 flex gap-1.5">
         <button
           type="button"
           onClick={(e) => {
@@ -284,7 +299,7 @@ const TableSeat = ({ table, onClick, onEdit, onTransfer, isSelected, isHovered, 
             <ArrowRightLeft className="h-3 w-3" />
           </button>
         )}
-      </div>
+      </div>}
     </div>
   );
 };

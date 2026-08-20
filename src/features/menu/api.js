@@ -1,5 +1,5 @@
 // Menyu (kategoriya + mahsulot) backend so'rovlari — services/axios orqali.
-// Manba: https://backend-production-11b7.up.railway.app/api-docs (Categories, Products)
+// Manba: https://backend-production-109c0.up.railway.app/api-docs (Categories, Products)
 import api from '../../services/axios'
 
 export const getCategories = () => api.get('/categories')
@@ -16,7 +16,7 @@ export const updateProduct = (id, formData) =>
   api.put(`/products/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
 export const deleteProduct = (id) => api.delete(`/products/${id}`)
 
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'https://backend-production-11b7.up.railway.app/api').replace(
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '/api').replace(
   /\/api\/?$/,
   '',
 )

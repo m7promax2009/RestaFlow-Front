@@ -13,7 +13,7 @@ export const getPublicProducts = (params) =>
 export const createGuestReservation = (payload) => api.post('/reservations', payload)
 
 const API_ORIGIN = (
-  import.meta.env.VITE_API_URL || 'https://backend-production-11b7.up.railway.app/api'
+  import.meta.env.VITE_API_URL || '/api'
 ).replace(/\/api\/?$/, '')
 
 export function resolveImageUrl(image) {
