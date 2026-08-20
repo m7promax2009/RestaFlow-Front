@@ -1,5 +1,5 @@
 // Bronlar — ro'yxat, yaratish, tahrirlash, holat o'zgartirish va o'chirish.
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { CalendarDays, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
@@ -196,19 +196,46 @@ export default function ReservationsPage() {
     form.customerName.trim() && form.customerPhone.trim() && form.table && form.date && form.guests > 0
 
   const reservations = reservationsQuery.data ?? []
+
+  // Build a map: tableId → confirmed reservation, so RESERVED tables can
+  // show the customer name and time on the 2D map.
+  const confirmedReservationByTable = useMemo(() => {
+    const map = new Map()
+    for (const r of reservations) {
+      if (r.status !== RESERVATION_STATUS.CONFIRMED) continue
+      const tableId = r.table?._id ?? r.table
+      if (tableId) map.set(tableId, r)
+    }
+    return map
+  }, [reservations])
+
   const tableOptions = (tablesQuery.data ?? []).map((t) => ({
     value: t._id,
     label: `Stol ${t.number} (${t.capacity} kishilik)`,
   }))
-  const selectableTables = (tablesQuery.data ?? []).map((table) => ({
-    ...table,
-    id: table._id ?? table.id,
-    // Reservation picker supports only a free table, plus the one already
-    // attached to this reservation (if it is being reconfirmed).
-    disabled:
-      table.status !== TABLE_STATUS.FREE &&
-      (table._id ?? table.id) !== (confirming?.table?._id ?? confirming?.table),
-  }))
+  const selectableTables = (tablesQuery.data ?? []).map((table) => {
+    const tableId = table._id ?? table.id
+    const reservation = confirmedReservationByTable.get(tableId)
+    return {
+      ...table,
+      id: tableId,
+      // Enrich RESERVED tables with reservation data so TableMap2D
+      // can display customerName, date, time, guestCount.
+      ...(reservation
+        ? {
+            customerName: reservation.customerName,
+            date: reservation.date ? new Date(reservation.date).toLocaleDateString('uz-UZ') : undefined,
+            time: reservation.date ? new Date(reservation.date).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : undefined,
+            guestCount: reservation.guests,
+          }
+        : {}),
+      // Reservation picker supports only a free table, plus the one already
+      // attached to this reservation (if it is being reconfirmed).
+      disabled:
+        table.status !== TABLE_STATUS.FREE &&
+        tableId !== (confirming?.table?._id ?? confirming?.table),
+    }
+  })
 
   return (
     <div>
@@ -360,14 +387,14 @@ export default function ReservationsPage() {
                 setSelectedTable(null)
               }}
             >
-              Ortga
+              Bekor qilish
             </Button>
             <Button
               disabled={!selectedTable || confirmMutation.isPending}
               isLoading={confirmMutation.isPending}
               onClick={() => confirmMutation.mutate({ reservation: confirming, table: selectedTable })}
             >
-              Tasdiqlash
+              Saqlash
             </Button>
           </>
         }

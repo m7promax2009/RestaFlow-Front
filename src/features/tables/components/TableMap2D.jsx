@@ -1,6 +1,8 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowRightLeft, Pencil } from '../../../lib/Icons';
-import { useTables } from '../../../hooks/useTables';
+import { getTables, updateTable } from '../api';
+import { unwrapList } from '../../../lib/api';
 import { TABLE_STATUS, TABLE_STATUS_LABELS, TABLE_STATUS_COLORS } from '../../../constants/tableStatus';
 import EditTableModal from './EditTableModal';
 import TransferTableModal from './TransferTableModal';
@@ -22,16 +24,33 @@ const TableMap2D = ({
   tables: externalTables,
   pickerMode = false,
 }) => {
-  const tableState = useTables({ enabled: !pickerMode });
-  const { loading, error, updateTableData, selectTable } = tableState;
-  const tables = externalTables ?? tableState.tables;
+  const queryClient = useQueryClient();
+
+  const tablesQuery = useQuery({
+    queryKey: ['tables'],
+    queryFn: async () => unwrapList(await getTables({ page: 1, limit: 100 }), 'tables'),
+    enabled: !pickerMode,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }) => updateTable(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tables'] });
+    },
+  });
+
+  const loading = pickerMode ? false : tablesQuery.isLoading;
+  const error = pickerMode ? null : (tablesQuery.error ? (tablesQuery.error?.response?.data?.message || tablesQuery.error.message || 'Xatolik') : null);
+  const tables = externalTables ?? (tablesQuery.data ?? []);
+
   const [hoveredTable, setHoveredTable] = useState(null);
+  const [selectedLocal, setSelectedLocal] = useState(null);
   const [editingTable, setEditingTable] = useState(null);
   const [transferringTable, setTransferringTable] = useState(null);
   const [occupyingTable, setOccupyingTable] = useState(null);
   const [zoneFilter, setZoneFilter] = useState(ZONE_FILTER_ALL);
 
-  const selected = externalSelected || null;
+  const selected = externalSelected ?? selectedLocal ?? null;
 
   const zoneNames = useMemo(() => {
     const set = new Set(tables.map((t) => t.zone || 'Boshqa'));
@@ -53,8 +72,6 @@ const TableMap2D = ({
   }, [tables, zoneFilter]);
 
   const handleTableClick = (table) => {
-    // Reservation screen uses the map purely to choose a table. Do not run
-    // the normal order/occupancy interactions in this mode.
     if (pickerMode) {
       onTableClick?.(table);
       return;
@@ -63,27 +80,25 @@ const TableMap2D = ({
       setOccupyingTable(table);
       return;
     }
-    selectTable(table);
+    setSelectedLocal(table);
     onTableClick?.(table);
   };
 
   const handleOccupyConfirm = async (details) => {
     if (!occupyingTable) return;
 
-    const result = await updateTableData(occupyingTable.id, {
-      status: TABLE_STATUS.OCCUPIED,
-      ...details,
-    });
-
-    if (!result.success) {
+    try {
+      await updateMutation.mutateAsync({
+        id: occupyingTable.id,
+        data: { status: TABLE_STATUS.OCCUPIED, ...details },
+      });
+      const updated = { ...occupyingTable, status: TABLE_STATUS.OCCUPIED, ...details };
+      setOccupyingTable(null);
+      setSelectedLocal(updated);
+      onTableClick?.(updated);
+    } catch {
       alert('Stolni band qilishda xatolik yuz berdi');
-      return;
     }
-
-    const updated = { ...occupyingTable, status: TABLE_STATUS.OCCUPIED, ...details };
-    setOccupyingTable(null);
-    selectTable(updated);
-    onTableClick?.(updated);
   };
 
   const handleTransferConfirm = async (sourceTableId, targetTableId) => {
@@ -93,21 +108,20 @@ const TableMap2D = ({
       throw new Error('Stol topilmadi');
     }
 
-    const freed = await updateTableData(fromTable.id, { status: TABLE_STATUS.AVAILABLE, currentOrderId: null });
-    if (!freed.success) {
-      throw freed.error || new Error('Manba stolni bo\'shatishda xatolik');
+    try {
+      await updateMutation.mutateAsync({
+        id: fromTable.id,
+        data: { status: TABLE_STATUS.AVAILABLE, currentOrderId: null },
+      });
+      await updateMutation.mutateAsync({
+        id: toTable.id,
+        data: { status: TABLE_STATUS.OCCUPIED, currentOrderId: fromTable.currentOrderId },
+      });
+      onOrderTransferred?.(fromTable, toTable);
+      setTransferringTable(null);
+    } catch (err) {
+      throw err || new Error("Stolni ko'chirishda xatolik");
     }
-
-    const occupied = await updateTableData(toTable.id, {
-      status: TABLE_STATUS.OCCUPIED,
-      currentOrderId: fromTable.currentOrderId,
-    });
-    if (!occupied.success) {
-      throw occupied.error || new Error('Maqsadli stolni band qilishda xatolik');
-    }
-
-    onOrderTransferred?.(fromTable, toTable);
-    setTransferringTable(null);
   };
 
   if (loading) {
@@ -203,7 +217,7 @@ const TableMap2D = ({
           table={editingTable}
           onClose={() => setEditingTable(null)}
           onSave={(updated) => {
-            updateTableData(updated.id, updated);
+            updateMutation.mutate({ id: updated.id, data: updated });
             setEditingTable(null);
           }}
         />
