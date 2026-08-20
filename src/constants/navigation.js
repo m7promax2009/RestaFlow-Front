@@ -11,6 +11,7 @@ import {
   Bell,
   Settings,
   ScrollText,
+  SlidersHorizontal,
 } from 'lucide-react'
 
 import { ROLES } from './roles'
@@ -126,6 +127,14 @@ export const NAV_ITEMS = [
     icon: Settings,
     roles: ALL,
     inSidebar: false,
+  },
+  {
+    key: 'settings',
+    path: '/settings',
+    label: 'Sozlamalar',
+    icon: SlidersHorizontal,
+    roles: STAFF,
+    inSidebar: true,
   },
 ]
 

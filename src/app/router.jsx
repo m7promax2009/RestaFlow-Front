@@ -39,6 +39,7 @@ const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPa
 const AuditLogPage = lazy(() => import('../features/employees/pages/AuditLogPage'))
 const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
+const SettingsPage = lazy(() => import('../features/settings/pages/SettingsPage'))
 
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
@@ -60,6 +61,7 @@ const PAGE_BY_KEY = {
   employees: <EmployeesPage />,
   notifications: <NotificationsPage />,
   profile: <ProfilePage />,
+  settings: <SettingsPage />,
 }
 
 // Har bandni o'z rollari bilan RoleRoute ichiga o'raydi.

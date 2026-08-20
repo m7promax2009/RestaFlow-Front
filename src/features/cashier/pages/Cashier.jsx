@@ -20,6 +20,7 @@ import { toast } from 'react-toastify'
 
 import { createPayment, getReceipt } from '../api'
 import { getOrders } from '../../orders/api'
+import { getSettings } from '../../settings/api'
 import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
 import {
   ORDER_STATUS_LABELS,
@@ -63,6 +64,12 @@ export default function Cashier() {
     queryKey: ['receipt', selectedId],
     queryFn: async () => unwrap(await getReceipt(selectedId), 'receipt'),
     enabled: Boolean(selectedId),
+  })
+
+  const settingsQuery = useQuery({
+    queryKey: ['settings'],
+    queryFn: async () => unwrap(await getSettings(), 'settings'),
+    staleTime: 5 * 60_000,
   })
 
   const paymentMutation = useMutation({
@@ -235,6 +242,18 @@ export default function Cashier() {
 
               <div className="mt-4 space-y-1.5 border-t border-slate-200 pt-4 text-sm dark:border-slate-800">
                 <Row label="Buyurtma summasi" value={formatSom(receipt?.order?.totalAmount)} />
+                {settingsQuery.data?.taxRate > 0 && (
+                  <Row
+                    label={`Soliq (${settingsQuery.data.taxRate}%), taxminiy`}
+                    value={formatSom((receipt?.order?.totalAmount ?? 0) * (settingsQuery.data.taxRate / 100))}
+                  />
+                )}
+                {settingsQuery.data?.serviceFee > 0 && (
+                  <Row
+                    label={`Xizmat haqi (${settingsQuery.data.serviceFee}%), taxminiy`}
+                    value={formatSom((receipt?.order?.totalAmount ?? 0) * (settingsQuery.data.serviceFee / 100))}
+                  />
+                )}
                 <Row label="To'langan" value={formatSom(receipt?.paidTotal)} />
                 <div className="flex justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-900 dark:border-slate-800 dark:text-white">
                   <span>Qolgan</span>
