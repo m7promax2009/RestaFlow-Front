@@ -1,6 +1,29 @@
 // Kassa API — Backend/src/routes/payment.routes.js va order receipt bilan mos.
 import api from '../../services/axios'
 
+// ─── Smena (Shift) API ──────────────────────────────────────────────────────
+/** Joriy ochiq smenani olish — GET /api/shifts/current */
+export const getCurrentShift = () => api.get('/shifts/current')
+
+/**
+ * Yangi smena ochish — POST /api/shifts/open
+ * payload: { openingBalance?: number }
+ */
+export const openShift = (payload) => api.post('/shifts/open', payload)
+
+/**
+ * Smena yopish — POST /api/shifts/close
+ * payload: { closingBalance: number }
+ */
+export const closeShift = (payload) => api.post('/shifts/close', payload)
+
+/**
+ * Z-Report — GET /api/shifts/:id/report
+ * Smena bo'yicha to'liq hisobot
+ */
+export const getShiftReport = (shiftId) => api.get(`/shifts/${shiftId}/report`)
+
+// ─── Buyurtmalar / To'lovlar API ────────────────────────────────────────────
 export const getReceipt = (orderId) => api.get(`/orders/${orderId}/receipt`)
 
 /**

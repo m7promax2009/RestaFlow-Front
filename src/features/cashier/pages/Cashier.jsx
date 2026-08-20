@@ -7,6 +7,7 @@ import {
   CheckCircle,
   CreditCard,
   History,
+  Lock,
   Printer,
   Receipt as ReceiptIcon,
   Smartphone,
@@ -15,10 +16,11 @@ import {
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { createPayment, getReceipt, getUnpaidOrders } from '../api'
+import { createPayment, getReceipt, getUnpaidOrders, getCurrentShift } from '../api'
 import { updateOrderStatus } from '../../orders/api'
 import ReceiptPrintModal from '../components/ReceiptPrintModal'
 import PaymentsHistory from '../components/PaymentsHistory'
+import ShiftPanel from '../components/ShiftPanel'
 import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
 import {
   ORDER_STATUS,
@@ -46,6 +48,23 @@ const METHOD_ICONS = {
 
 export default function Cashier() {
   const queryClient = useQueryClient()
+
+  // Joriy smena — smena ochilmagan bo'lsa to'lov qabul qilib bo'lmaydi
+  const shiftQuery = useQuery({
+    queryKey: ['shift', 'current'],
+    queryFn: async () => {
+      try {
+        const res = await getCurrentShift()
+        return unwrap(res, 'shift')
+      } catch (err) {
+        if (err?.response?.status === 404) return null
+        throw err
+      }
+    },
+    refetchInterval: 30_000,
+  })
+  const shift = shiftQuery.data
+  const hasOpenShift = shift && shift.status === 'open'
 
   const [activeTab, setActiveTab] = useState('cashier') // 'cashier' | 'history'
   const [selectedId, setSelectedId] = useState(null)
@@ -139,6 +158,21 @@ export default function Cashier() {
     <div className="space-y-5">
       <PageHeader title="Kassa" subtitle="To'lovlarni qabul qilish, hisobni bo'lish va to'lovlar tarixi" />
 
+      {/* Smena paneli — smena ochilmagan bo'lsa to'lov bloklanadi */}
+      <ShiftPanel onShiftChange={() => shiftQuery.refetch()} />
+
+      {/* Smena bloki — to'lov paneli faqat smena ochiq bo'lganda ishlaydi */}
+      {!hasOpenShift && shiftQuery.isSuccess && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-center dark:border-amber-800 dark:bg-amber-950/40">
+          <div className="flex items-center justify-center gap-2 text-amber-700 dark:text-amber-300">
+            <Lock className="h-5 w-5" />
+            <p className="text-sm font-semibold">
+              To'lov qabul qilish uchun avval smenani oching
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
         <button
@@ -169,6 +203,14 @@ export default function Cashier() {
 
       {activeTab === 'history' ? (
         <PaymentsHistory />
+      ) : !hasOpenShift ? (
+        <Card>
+          <EmptyState
+            icon={Lock}
+            title="Smena ochilmagan"
+            description={"To'lov qabul qilish uchun yuqoridagi \"Smena ochish\" tugmasini bosing."}
+          />
+        </Card>
       ) : (
         <div className="grid gap-5 lg:grid-cols-[320px_1fr]">
           {/* To'lanmagan buyurtmalar ro'yxati */}
