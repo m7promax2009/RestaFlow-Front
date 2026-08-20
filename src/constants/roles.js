@@ -8,6 +8,8 @@ export const ROLES = {
   WAITER: 'waiter',
   CASHIER: 'cashier',
   COOK: 'cook',
+  // Alias — ba'zi eski kodlar CHEF ishlatadi (COOK bilan bir xil qiymat).
+  CHEF: 'cook',
 }
 
 export const ROLE_LIST = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER, ROLES.CASHIER, ROLES.COOK]

@@ -4,6 +4,7 @@ import tableReducer from './tableStore';
 import cartReducer from './cartStore';
 import orderReducer from '../services/order.service';
 import reservationReducer from './reservationStore';
+import { notificationsReducer } from '../features/notifications';
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     cart: cartReducer,
     orders: orderReducer,
     reservations: reservationReducer,
+    notifications: notificationsReducer,
   },
 });
 

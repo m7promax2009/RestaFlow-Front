@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
-import { Bell, Globe, LogOut, Menu, Moon, Sun, User, X } from 'lucide-react'
+import { Bell, LogOut, Menu, User, X } from 'lucide-react'
 
 import { clearCredentials } from '../features/auth/authSlice'
 import { clearSession } from '../features/auth/session'
@@ -18,7 +17,6 @@ export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
-  const { i18n } = useTranslation()
 
   const user = useSelector((state) => state.auth.user)
   const notifications = useSelector((state) => state.notifications.items)
@@ -28,11 +26,6 @@ export default function AppLayout() {
   )
 
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme')
-    if (saved) return saved === 'dark'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
 
   useAuthSync() // tablar aro logout sinxronlash
   useNotificationsSocket() // real-time bildirishnomalar
@@ -41,23 +34,6 @@ export default function AppLayout() {
 
   // Sahifa almashganda mobil menyu ochiq qolib ketmasin.
   useEffect(() => setMobileOpen(false), [location.pathname])
-
-  // Mavzuni boshqarish hamda documentElement'ga .dark klassini berish
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDark])
-
-  const toggleTheme = () => setIsDark((prev) => !prev)
-
-  const changeLanguage = (lang) => {
-    i18n.changeLanguage(lang)
-  }
 
   const handleLogout = () => {
     disconnectSocket()
@@ -168,36 +144,7 @@ export default function AppLayout() {
             {items.find((i) => i.path === location.pathname)?.label ?? 'RestoFlow'}
           </span>
 
-          <div className="ml-auto flex items-center gap-2">
-            {/* Til almashtirish */}
-            <div className="flex items-center gap-1 rounded-lg bg-slate-100 p-1 text-xs font-semibold dark:bg-slate-800">
-              <Globe className="ml-1 h-3.5 w-3.5 text-slate-400" />
-              {['uz', 'ru', 'en'].map((lang) => (
-                <button
-                  key={lang}
-                  type="button"
-                  onClick={() => changeLanguage(lang)}
-                  className={`rounded px-1.5 py-0.5 uppercase transition ${
-                    i18n.language === lang
-                      ? 'bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-300'
-                      : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
-                  }`}
-                >
-                  {lang}
-                </button>
-              ))}
-            </div>
-
-            {/* Dark/Light mode almashtirish */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-              title={isDark ? "Yorug' rejimga o'tish" : "Qorong'u rejimga o'tish"}
-            >
-              {isDark ? <Sun className="h-5 w-5 text-amber-400" /> : <Moon className="h-5 w-5 text-indigo-600" />}
-            </button>
-
+          <div className="ml-auto flex items-center gap-1">
             <NavLink
               to="/notifications"
               className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"

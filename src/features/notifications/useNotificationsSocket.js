@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useQueryClient } from '@tanstack/react-query'
 import { socket } from '../../services/socket'
 import { getTables } from './api'
-import { addNotification } from './notificationsSlice'
+import { addNotification, fetchNotifications } from './notificationsSlice'
 import { toast } from '../../components/ui'
 import { ROLES } from '../../constants/roles'
 
@@ -27,6 +27,11 @@ export default function useNotificationsSocket() {
     // Har render'da qayta yaratilmasligi uchun ref: stollar xaritasi socket handler
     // ichida ishlatiladi, lekin o'zgarishi effektni qayta ishga tushirmasligi kerak.
     const tablesRef = useRef({ byId: new Map(), waiterFieldSeen: false })
+
+    // Backend'dan bildirishnomalarni yuklash (birinchi kirishda)
+    useEffect(() => {
+        dispatch(fetchNotifications())
+    }, [dispatch])
 
     useEffect(() => {
         let cancelled = false
@@ -96,19 +101,37 @@ export default function useNotificationsSocket() {
             toast.success(notification.message)
         }
 
+        // Yangi bildirishnoma socket eventi — backend'dan to'g'ridan-to'g'ri keladi
+        const handleNotificationNew = (payload) => {
+            const notification = {
+                _id: payload._id ?? payload.id ?? `${Date.now()}`,
+                type: payload.type ?? 'info',
+                title: payload.title ?? payload.message ?? 'Bildirishnoma',
+                message: payload.message ?? payload.body ?? '',
+                orderId: payload.orderId,
+                tableNumber: payload.tableNumber,
+                read: false,
+                createdAt: payload.createdAt ?? new Date().toISOString(),
+            }
+            dispatch(addNotification(notification))
+            if (notification.message) {
+                toast.success(notification.message)
+            }
+        }
+
         socket.on('order:ready', handleOrderReady)
         socket.on('order:new', handleOrderEvent)
         socket.on('order:statusChanged', handleOrderEvent)
-        socket.on('table:status_updated', handleTableUpdated)
         socket.on('table:updated', handleTableUpdated)
+        socket.on('notification:new', handleNotificationNew)
 
         return () => {
             cancelled = true
             socket.off('order:ready', handleOrderReady)
             socket.off('order:new', handleOrderEvent)
             socket.off('order:statusChanged', handleOrderEvent)
-            socket.off('table:status_updated', handleTableUpdated)
             socket.off('table:updated', handleTableUpdated)
+            socket.off('notification:new', handleNotificationNew)
         }
     }, [dispatch, queryClient, user])
 }

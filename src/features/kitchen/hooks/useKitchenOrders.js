@@ -1,18 +1,15 @@
 // Oshxona buyurtmalari — boshlang'ich yuklash + Socket.io real-time yangilanish.
-// Backend hali ulanmagan bo'lsa, demo ma'lumotlarga tushadi (UI sinovi uchun).
 // Mas'ul: Ziyodulla.
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { socket, connectSocket, disconnectSocket } from '../../../services/socket'
 import { fetchKitchenOrders, updateOrderStatus, normalizeKitchenOrder } from '../api'
-import { MOCK_ORDERS } from '../mockData'
 import { ORDER_STATUS } from '../../../constants/roles'
 
 const BOARD_STATUSES = [ORDER_STATUS.NEW, ORDER_STATUS.IN_KITCHEN, ORDER_STATUS.READY]
 
 export function useKitchenOrders() {
   const [orders, setOrders] = useState([])
-  const [connection, setConnection] = useState('connecting') // connecting | live | offline | demo
-  const isDemo = useRef(false)
+  const [connection, setConnection] = useState('connecting') // connecting | live | offline
 
   const reloadOrders = useCallback(async () => {
     try {
@@ -44,13 +41,11 @@ export function useKitchenOrders() {
       .then((data) => {
         if (cancelled) return
         setOrders(data.filter((o) => BOARD_STATUSES.includes(o.status)))
+        setConnection('live')
       })
       .catch(() => {
         if (cancelled) return
-        // Backend mavjud emas — demo ma'lumotlar bilan ishlaymiz.
-        isDemo.current = true
-        setOrders(MOCK_ORDERS)
-        setConnection('demo')
+        setConnection('offline')
       })
 
     return () => {
@@ -58,9 +53,8 @@ export function useKitchenOrders() {
     }
   }, [])
 
-  // Socket.io real-time ulanish (faqat backend mavjud bo'lganda)
+  // Socket.io real-time ulanish
   useEffect(() => {
-    if (isDemo.current) return undefined
 
     const token = window.localStorage.getItem('accessToken')
     connectSocket(token)
@@ -92,7 +86,6 @@ export function useKitchenOrders() {
       socket.off('kitchen:new_order', reloadOrders)
       socket.off('order:statusChanged', handleStatusChanged)
       socket.off('order:status_changed', handleStatusChanged)
-      disconnectSocket()
     }
   }, [upsertOrder, reloadOrders])
 
@@ -105,16 +98,15 @@ export function useKitchenOrders() {
           : prev.map((o) => (o.id === orderId ? { ...o, status } : o)),
       )
 
-      if (isDemo.current) return
-
       try {
         socket.emit('order:updateStatus', { orderId, status })
         await updateOrderStatus(orderId, status)
       } catch {
-        // TODO (Ziyodulla/backend): xatolik bo'lsa eski holatga qaytarish + toast
+        // Xatolik bo'lsa — real holatni qayta yuklash
+        await reloadOrders()
       }
     },
-    [],
+    [reloadOrders],
   )
 
   const columns = {

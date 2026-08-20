@@ -1,8 +1,8 @@
 // Oshxona paneli — buyurtmalar Kutilmoqda → Tayyorlanmoqda → Tayyor.
-// Socket.io orqali real-time yangilanadi; backend ulanmagan bo'lsa demo rejimda ishlaydi.
+// Socket.io orqali real-time yangilanadi.
 // Mas'ul: Ziyodulla.
 import { useTranslation } from 'react-i18next'
-import { Radio, WifiOff, FlaskConical } from 'lucide-react'
+import { Radio, WifiOff } from 'lucide-react'
 import { useKitchenOrders } from '../hooks/useKitchenOrders'
 import KitchenColumn from '../components/KitchenColumn'
 import { ORDER_STATUS } from '../../../constants/roles'
@@ -11,7 +11,6 @@ const CONNECTION_META = {
   live: { icon: Radio, className: 'text-leaf', labelKey: 'kitchen.connectionLive' },
   connecting: { icon: Radio, className: 'text-slate', labelKey: 'kitchen.connectionLive' },
   offline: { icon: WifiOff, className: 'text-cherry', labelKey: 'kitchen.connectionOffline' },
-  demo: { icon: FlaskConical, className: 'text-amber', labelKey: 'kitchen.connectionDemo' },
 }
 
 export default function KitchenPage() {

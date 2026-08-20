@@ -3,7 +3,7 @@
 import axios from 'axios'
 import { disconnectSocket } from './socket'
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const baseURL = import.meta.env.VITE_API_URL || 'https://backend-production-109c0.up.railway.app/api'
 
 const api = axios.create({
   baseURL,
@@ -11,11 +11,16 @@ const api = axios.create({
 })
 
 const isValidToken = (token) => token && token !== 'undefined' && token !== 'null'
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/forgot-password']
 
-// So'rovga token qo'shish
+// Login va boshqa public auth endpointlarga eski sessiya tokeni yuborilmaydi.
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('accessToken')
-  if (isValidToken(token)) config.headers.Authorization = `Bearer ${token}`
+  const isAuthEndpoint = AUTH_ENDPOINTS.some((url) => config.url?.includes(url))
+  if (isValidToken(token) && !isAuthEndpoint && !config.skipAuth) {
+    config.headers = config.headers ?? {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 
@@ -32,8 +37,6 @@ const processQueue = (error, accessToken = null) => {
   })
   pendingQueue = []
 }
-
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/forgot-password']
 
 const redirectToLogin = () => {
   localStorage.removeItem('accessToken')
