@@ -99,7 +99,7 @@ export default function ReservationsPage() {
       if (editing) {
         return updateReservation(editing._id, {
           status: form.status,
-          date: form.date,
+          date: new Date(form.date).toISOString(),
           guests: Number(form.guests),
           notes: form.notes.trim(),
         })
@@ -108,7 +108,7 @@ export default function ReservationsPage() {
         customerName: form.customerName.trim(),
         customerPhone: form.customerPhone.trim(),
         table: form.table,
-        date: form.date,
+        date: new Date(form.date).toISOString(),
         guests: Number(form.guests),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       })
