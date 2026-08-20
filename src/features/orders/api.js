@@ -11,5 +11,9 @@ export const createOrder = (payload) => api.post('/orders', payload)
 /** status: constants/roles.js -> ORDER_STATUS qiymatlaridan biri. */
 export const updateOrderStatus = (id, status) => api.patch(`/orders/${id}/status`, { status })
 
+/** Buyurtmani boshqa stolga ko'chirish. table: yangi stolning ObjectId qiymati. */
 export const transferOrderTable = (id, table) =>
   api.patch(`/orders/${id}/transfer-table`, { table })
+
+export const cancelOrder = (id, reason) =>
+  api.patch(`/orders/${id}/cancel`, { reason })

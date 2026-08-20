@@ -1,7 +1,4 @@
-// Navigatsiya — YAGONA MANBA (single source of truth).
-// Marshrutlar (app/router.jsx) ham, sidebar (layouts/AppLayout.jsx) ham shu
-// ro'yxatdan oziqlanadi. Yangi sahifa qo'shganda faqat shu yerga yozing —
-// rol tekshiruvi va menyu avtomatik moslashadi.
+
 import {
   LayoutDashboard,
   ClipboardList,
@@ -13,6 +10,7 @@ import {
   Users,
   Bell,
   Settings,
+  ScrollText,
 } from 'lucide-react'
 
 import { ROLES } from './roles'
@@ -30,6 +28,22 @@ export const NAV_ITEMS = [
     path: '/dashboard',
     label: 'Boshqaruv paneli',
     icon: LayoutDashboard,
+    roles: STAFF,
+    inSidebar: true,
+  },
+  {
+    key: 'reports',
+    path: '/reports',
+    label: 'Hisobotlar & Analitika',
+    icon: ScrollText,
+    roles: STAFF,
+    inSidebar: true,
+  },
+  {
+    key: 'audit',
+    path: '/audit',
+    label: 'Audit jurnali',
+    icon: ScrollText,
     roles: STAFF,
     inSidebar: true,
   },

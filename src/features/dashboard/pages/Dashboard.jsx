@@ -11,12 +11,13 @@ import {
   Package,
   Receipt,
   RefreshCw,
+  Send,
   TrendingUp,
   Utensils,
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { getDailySales, getDashboardStats, getReports, getTopProducts } from '../../../services/dashboardService'
+import { getDailySales, getDashboardStats, getTopProducts } from '../../../services/dashboardService'
 import { getOrders } from '../../orders/api'
 import { getTables } from '../../tables/api'
 import { unwrap, unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
@@ -32,20 +33,30 @@ import {
 } from '../../../components/ui'
 import { exportToCSV, exportToExcel } from '../../../utils/exportToExcel'
 import { exportToPDF as exportPDFUtil } from '../../../utils/exportUtils'
+import api from '../../../services/axios'
 
 export default function Dashboard() {
   const [isExporting, setIsExporting] = useState(false)
+  const [isSendingTelegram, setIsSendingTelegram] = useState(false)
+
+  const handleSendTelegram = async () => {
+    setIsSendingTelegram(true)
+    try {
+      await api.post('/reports/telegram-daily-report')
+      toast.success('Hisobot Telegram botga muvaffaqiyatli yuborildi! 📲')
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Telegram'ga yuborishda xatolik yuz berdi"))
+    } finally {
+      setIsSendingTelegram(false)
+    }
+  }
 
   // 1. Dashboard umumiy statistikasi — GET /reports yoki /reports/dashboard
   const statsQuery = useQuery({
     queryKey: ['reports', 'dashboard'],
     queryFn: async () => {
-      try {
-        const res = await getReports()
-        return unwrap(res, 'report') || unwrap(res)
-      } catch {
-        return unwrap(await getDashboardStats(), 'report')
-      }
+      const res = await getDashboardStats()
+      return unwrap(res, 'report') || unwrap(res)
     },
     refetchInterval: 60_000,
   })
@@ -241,6 +252,15 @@ export default function Dashboard() {
             >
               <FileText className="mr-1.5 h-4 w-4 text-rose-600 dark:text-rose-400" />
               PDF (.pdf)
+            </Button>
+            <Button
+              variant="secondary"
+              isLoading={isSendingTelegram}
+              onClick={handleSendTelegram}
+              className="text-xs sm:text-sm"
+            >
+              <Send className="mr-1.5 h-4 w-4 text-sky-500" />
+              Telegram'ga yuborish
             </Button>
             <Button
               variant="secondary"

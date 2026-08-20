@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components */
 // Marshrutlar daraxti.
 //
 // Arxitektura qoidasi: har bir himoyalangan sahifaning ROLLARI shu faylda emas,
@@ -26,6 +27,7 @@ const GuestMenuPage = lazy(() => import('../features/qr-menu/pages/GuestMenuPage
 
 // ─── Himoyalangan sahifalar ─────────────────────────────────────
 const DashboardPage = lazy(() => import('../features/dashboard/pages/Dashboard'))
+const ReportsPage = lazy(() => import('../features/reports/pages/ReportsPage'))
 const OrdersPage = lazy(() => import('../features/orders/pages/OrdersPage'))
 const WaiterPage = lazy(() => import('../features/orders/pages/WaiterPage'))
 const KitchenPage = lazy(() => import('../features/kitchen/pages/KitchenPage'))
@@ -34,6 +36,7 @@ const MenuPage = lazy(() => import('../features/menu/pages/MenuPage'))
 const TablesPage = lazy(() => import('../features/tables/pages/TablesPage'))
 const ReservationsPage = lazy(() => import('../features/reservations/pages/ReservationsPage'))
 const EmployeesPage = lazy(() => import('../features/employees/pages/EmployeesPage'))
+const AuditLogPage = lazy(() => import('../features/employees/pages/AuditLogPage'))
 const NotificationsPage = lazy(() => import('../features/notifications/pages/NotificationsPage'))
 const ProfilePage = lazy(() => import('../features/auth/pages/Profile'))
 
@@ -44,7 +47,9 @@ const ForbiddenPage = lazy(() => import('../pages/ForbiddenPage'))
 // yozilmasa, buildProtectedRoutes uni jimgina tashlab ketmaydi — dev rejimida
 // konsolga ogohlantirish chiqadi.
 const PAGE_BY_KEY = {
+  audit: <AuditLogPage />,
   dashboard: <DashboardPage />,
+  reports: <ReportsPage />,
   orders: <OrdersPage />,
   waiter: <WaiterPage />,
   kitchen: <KitchenPage />,

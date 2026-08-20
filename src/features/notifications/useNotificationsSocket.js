@@ -4,6 +4,7 @@
 // har doim mos ravishda chaqiriladi.
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useQueryClient } from '@tanstack/react-query'
 import { socket } from '../../services/socket'
 import { getTables } from './api'
 import { addNotification } from './notificationsSlice'
@@ -22,6 +23,7 @@ function resolveTableWaiterId(table) {
 export default function useNotificationsSocket() {
     const dispatch = useDispatch()
     const user = useSelector((state) => state.auth.user)
+    const queryClient = useQueryClient()
     // Har render'da qayta yaratilmasligi uchun ref: stollar xaritasi socket handler
     // ichida ishlatiladi, lekin o'zgarishi effektni qayta ishga tushirmasligi kerak.
     const tablesRef = useRef({ byId: new Map(), waiterFieldSeen: false })
@@ -48,6 +50,20 @@ export default function useNotificationsSocket() {
                 // Stollar ro'yxati kelmasa ham bildirishnoma ko'rsatishda davom etamiz,
                 // faqat "Stol N" o'rniga xom ObjectId ko'rinadi.
             }
+        }
+
+        const invalidateTablesAndOrders = () => {
+            queryClient.invalidateQueries({ queryKey: ['tables'], exact: false })
+            queryClient.invalidateQueries({ queryKey: ['orders'], exact: false })
+        }
+
+        const handleTableUpdated = async () => {
+            invalidateTablesAndOrders()
+            await loadTables()
+        }
+
+        const handleOrderEvent = () => {
+            invalidateTablesAndOrders()
         }
 
         loadTables()
@@ -81,12 +97,18 @@ export default function useNotificationsSocket() {
         }
 
         socket.on('order:ready', handleOrderReady)
-        socket.on('table:updated', loadTables)
+        socket.on('order:new', handleOrderEvent)
+        socket.on('order:statusChanged', handleOrderEvent)
+        socket.on('table:status_updated', handleTableUpdated)
+        socket.on('table:updated', handleTableUpdated)
 
         return () => {
             cancelled = true
             socket.off('order:ready', handleOrderReady)
-            socket.off('table:updated', loadTables)
+            socket.off('order:new', handleOrderEvent)
+            socket.off('order:statusChanged', handleOrderEvent)
+            socket.off('table:status_updated', handleTableUpdated)
+            socket.off('table:updated', handleTableUpdated)
         }
-    }, [dispatch, user])
+    }, [dispatch, queryClient, user])
 }

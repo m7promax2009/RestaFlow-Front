@@ -2,7 +2,7 @@
 // Mas'ul: Ziyodulla.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { socket, connectSocket, disconnectSocket } from '../../../services/socket'
-import { fetchKitchenOrders, updateOrderStatus } from '../api'
+import { fetchKitchenOrders, updateOrderStatus, normalizeKitchenOrder } from '../api'
 import { MOCK_ORDERS } from '../mockData'
 import { ORDER_STATUS } from '../../../constants/roles'
 
@@ -30,21 +30,26 @@ export function useKitchenOrders() {
   const [connection, setConnection] = useState('connecting') // connecting | live | offline | demo
   const isDemo = useRef(false)
 
+  const reloadOrders = useCallback(async () => {
+    try {
+      const data = await fetchKitchenOrders()
+      setOrders(data.filter((o) => BOARD_STATUSES.includes(o.status)))
+    } catch (err) {
+      console.warn('Failed to fetch kitchen orders:', err)
+    }
+  }, [])
+
   const upsertOrder = useCallback((incoming, isNew = false) => {
+    const normalized = normalizeKitchenOrder(incoming)
+    if (!normalized) return
     if (isNew) playAudioAlert()
     setOrders((prev) => {
-      const id = incoming.id || incoming._id
-      const formatted = {
-        id,
-        tableNumber: incoming.tableNumber || incoming.table?.number || 1,
-        waiterName: incoming.waiterName || incoming.createdByName || 'Ofitsiant',
-        status: incoming.status || ORDER_STATUS.NEW,
-        createdAt: incoming.createdAt || new Date().toISOString(),
-        items: incoming.items || []
+      const exists = prev.some((o) => o.id === normalized.id)
+      if (!BOARD_STATUSES.includes(normalized.status)) {
+        return prev.filter((o) => o.id !== normalized.id)
       }
-      const exists = prev.some((o) => o.id === id)
-      if (!exists) return [formatted, ...prev]
-      return prev.map((o) => (o.id === id ? { ...o, ...formatted } : o))
+      if (!exists) return [normalized, ...prev]
+      return prev.map((o) => (o.id === normalized.id ? { ...o, ...normalized } : o))
     })
   }, [])
 
@@ -76,8 +81,15 @@ export function useKitchenOrders() {
 
     const handleConnect = () => setConnection('live')
     const handleDisconnect = () => setConnection('offline')
-    const handleNewOrder = (order) => upsertOrder(order, true)
-    const handleStatusChanged = (order) => upsertOrder(order, false)
+    const handleNewOrder = (order) => {
+      playAudioAlert()
+      if (order && order.orderId) reloadOrders()
+      else upsertOrder(order)
+    }
+    const handleStatusChanged = (order) => {
+      if (order && order.orderId) reloadOrders()
+      else upsertOrder(order)
+    }
 
     socket.on('connect', handleConnect)
     socket.on('disconnect', handleDisconnect)
@@ -86,6 +98,7 @@ export function useKitchenOrders() {
     socket.on('order:created', handleNewOrder)
     socket.on('kitchen:new_order', handleNewOrder)
     socket.on('order:statusChanged', handleStatusChanged)
+    socket.on('order:status_changed', handleStatusChanged)
     socket.on('order:status_updated', handleStatusChanged)
 
     return () => {
@@ -96,9 +109,11 @@ export function useKitchenOrders() {
       socket.off('order:created', handleNewOrder)
       socket.off('kitchen:new_order', handleNewOrder)
       socket.off('order:statusChanged', handleStatusChanged)
+      socket.off('order:status_changed', handleStatusChanged)
       socket.off('order:status_updated', handleStatusChanged)
+      disconnectSocket()
     }
-  }, [upsertOrder])
+  }, [upsertOrder, reloadOrders])
 
   const setStatus = useCallback(
     async (orderId, status) => {

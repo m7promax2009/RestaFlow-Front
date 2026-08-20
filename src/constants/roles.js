@@ -8,8 +8,6 @@ export const ROLES = {
   WAITER: 'waiter',
   CASHIER: 'cashier',
   COOK: 'cook',
-  // Alias — ba'zi eski kodlar CHEF ishlatadi (COOK bilan bir xil qiymat).
-  CHEF: 'cook',
 }
 
 export const ROLE_LIST = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER, ROLES.CASHIER, ROLES.COOK]
@@ -41,6 +39,7 @@ export const ORDER_STATUS = {
   READY: 'tayyor',
   SERVED: 'berildi',
   CLOSED: 'yopilgan',
+  CANCELLED: 'bekor_qilingan',
 }
 
 export const ORDER_STATUS_LIST = [
@@ -49,6 +48,7 @@ export const ORDER_STATUS_LIST = [
   ORDER_STATUS.READY,
   ORDER_STATUS.SERVED,
   ORDER_STATUS.CLOSED,
+  ORDER_STATUS.CANCELLED,
 ]
 
 export const ORDER_STATUS_LABELS = {
@@ -57,6 +57,7 @@ export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.READY]: 'Tayyor',
   [ORDER_STATUS.SERVED]: 'Berildi',
   [ORDER_STATUS.CLOSED]: 'Yopilgan',
+  [ORDER_STATUS.CANCELLED]: 'Bekor qilingan',
 }
 
 // Badge ranglari (components/ui/Badge variantlari).
@@ -66,6 +67,7 @@ export const ORDER_STATUS_TONE = {
   [ORDER_STATUS.READY]: 'success',
   [ORDER_STATUS.SERVED]: 'neutral',
   [ORDER_STATUS.CLOSED]: 'neutral',
+  [ORDER_STATUS.CANCELLED]: 'danger',
 }
 
 // Statusni faqat oldinga surish mumkin — UI shu ketma-ketlikka tayanadi.
@@ -75,11 +77,12 @@ export const NEXT_ORDER_STATUS = {
   [ORDER_STATUS.READY]: ORDER_STATUS.SERVED,
   [ORDER_STATUS.SERVED]: ORDER_STATUS.CLOSED,
   [ORDER_STATUS.CLOSED]: null,
+  [ORDER_STATUS.CANCELLED]: null,
 }
 
 // ─── Stol holati ────────────────────────────────────────────────────────────
 export const TABLE_STATUS = {
-  FREE: 'available',
+  FREE: 'free',
   BUSY: 'occupied',
   RESERVED: 'reserved',
 }

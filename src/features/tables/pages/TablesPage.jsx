@@ -44,9 +44,11 @@ export default function TablesPage() {
   const [qrModalTable, setQrModalTable] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
+  // Stol taxtasi barcha stollarni birdaniga ko'rsatadi (paginatsiz UI),
+  // shu sabab limit'ni katta qilib yuboramiz — GET /api/tables?page=1&limit=100
   const tablesQuery = useQuery({
     queryKey: ['tables'],
-    queryFn: async () => unwrapList(await getTables(), 'tables'),
+    queryFn: async () => unwrapList(await getTables({ page: 1, limit: 100 }), 'tables'),
   })
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['tables'] })

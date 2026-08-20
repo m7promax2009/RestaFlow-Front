@@ -2,7 +2,7 @@
 // Mas'ul: Ziyoddila (infra). Foydalanadi: kitchen, orders, notifications.
 import { io } from 'socket.io-client'
 
-const URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000'
+const URL = import.meta.env.VITE_SOCKET_URL || 'https://backend-production-109c0.up.railway.app'
 
 export const socket = io(URL, {
   autoConnect: false,
@@ -13,7 +13,7 @@ export const socket = io(URL, {
 //   order:new             — yangi buyurtma (oshxona)
 //   order:statusChanged   — status o'zgardi
 //   order:ready           — tayyor (ofitsiantga)
-//   table:updated         — stol holati
+//   table:status_updated — stol holati (backend kanonik nomi)
 //   notification:new      — yangi bildirishnoma
 export const connectSocket = (token) => {
   socket.auth = { token }

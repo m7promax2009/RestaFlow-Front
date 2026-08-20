@@ -2,10 +2,10 @@
 // O'ng ustunda ofitsiantning faol buyurtmalari real vaqtda ko'rinadi.
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Minus, Plus, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
+import { ArrowRightLeft, Minus, Plus, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { createOrder, getOrders, updateOrderStatus } from '../api'
+import { createOrder, getOrders, transferOrderTable, updateOrderStatus } from '../api'
 import { getTables } from '../../tables/api'
 import { getCategories, getProducts } from '../../menu/api'
 import { unwrapList, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
@@ -17,7 +17,17 @@ import {
   TABLE_STATUS,
   TABLE_STATUS_LABELS,
 } from '../../../constants/roles'
-import { Badge, Button, Card, EmptyState, Input, PageHeader, Skeleton } from '../../../components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  Input,
+  Modal,
+  PageHeader,
+  Select,
+  Skeleton,
+} from '../../../components/ui'
 
 export default function WaiterPage() {
   const queryClient = useQueryClient()
@@ -28,9 +38,13 @@ export default function WaiterPage() {
   const [cart, setCart] = useState([]) // [{ product, name, price, quantity }]
   const [notes, setNotes] = useState('')
 
+  // Stolni ko'chirish modali — qaysi buyurtma ko'chirilayotgani va tanlangan yangi stol.
+  const [transferOrder, setTransferOrder] = useState(null)
+  const [transferTableId, setTransferTableId] = useState('')
+
   const tablesQuery = useQuery({
     queryKey: ['tables'],
-    queryFn: async () => unwrapList(await getTables(), 'tables'),
+    queryFn: async () => unwrapList(await getTables({ page: 1, limit: 100 }), 'tables'),
   })
 
   const categoriesQuery = useQuery({
@@ -79,6 +93,27 @@ export default function WaiterPage() {
     onError: (error) => toast.error(apiErrorMessage(error, "Holat o'zgarmadi")),
   })
 
+  const transferMutation = useMutation({
+    mutationFn: ({ id, table }) => transferOrderTable(id, table),
+    onSuccess: () => {
+      toast.success('Buyurtma boshqa stolga ko\'chirildi')
+      closeTransferModal()
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['tables'] })
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Stolni ko'chirib bo'lmadi")),
+  })
+
+  const openTransferModal = (order) => {
+    setTransferOrder(order)
+    setTransferTableId('')
+  }
+
+  const closeTransferModal = () => {
+    setTransferOrder(null)
+    setTransferTableId('')
+  }
+
   const total = useMemo(
     () => cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [cart],
@@ -105,7 +140,7 @@ export default function WaiterPage() {
   }
 
   const activeOrders = (activeOrdersQuery.data ?? []).filter(
-    (o) => o.status !== ORDER_STATUS.CLOSED,
+    (o) => o.status !== ORDER_STATUS.CLOSED && o.status !== ORDER_STATUS.CANCELLED,
   )
 
   return (
@@ -258,6 +293,11 @@ export default function WaiterPage() {
                           {ORDER_STATUS_LABELS[next]}
                         </Button>
                       )}
+                      {order.status !== ORDER_STATUS.CLOSED && (
+                        <Button variant="ghost" onClick={() => openTransferModal(order)}>
+                          <ArrowRightLeft className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   )
                 })}
@@ -340,6 +380,39 @@ export default function WaiterPage() {
           )}
         </Card>
       </div>
+
+      <Modal
+        isOpen={!!transferOrder}
+        onClose={closeTransferModal}
+        title={transferOrder ? `Stol ${transferOrder.table?.number ?? '—'} — ko'chirish` : ''}
+        footer={
+          <>
+            <Button variant="secondary" onClick={closeTransferModal}>
+              Bekor qilish
+            </Button>
+            <Button
+              onClick={() => transferMutation.mutate({ id: transferOrder._id, table: transferTableId })}
+              disabled={!transferTableId}
+              isLoading={transferMutation.isPending}
+            >
+              Ko'chirish
+            </Button>
+          </>
+        }
+      >
+        <Select
+          label="Yangi stolni tanlang"
+          value={transferTableId}
+          onChange={(e) => setTransferTableId(e.target.value)}
+          placeholder="Stolni tanlang"
+          options={(tablesQuery.data ?? [])
+            .filter((t) => t._id !== transferOrder?.table?._id)
+            .map((t) => ({
+              value: t._id,
+              label: `Stol ${t.number} — ${TABLE_STATUS_LABELS[t.status]}`,
+            }))}
+        />
+      </Modal>
     </div>
   )
 }

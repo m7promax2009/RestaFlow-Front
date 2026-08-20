@@ -1,5 +1,6 @@
 export const TABLE_STATUS = {
-  AVAILABLE: 'available',
+  AVAILABLE: 'free',
+  FREE: 'free',
   OCCUPIED: 'occupied',
   RESERVED: 'reserved',
   CLEANING: 'cleaning'

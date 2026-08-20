@@ -1,22 +1,20 @@
 import { useState } from 'react';
 import TableMap2D from './TableMap2D';
-import Waiter from '../../waiter/Waiter';
 import { useTables } from '../../../hooks/useTables';
 import { TABLE_STATUS } from '../../../constants/tableStatus';
 
 const Tables = () => {
   const { tables, changeStatus } = useTables();
   const [selectedTable, setSelectedTable] = useState(null);
-  const [showWaiter, setShowWaiter] = useState(false);
 
   const handleTableClick = (table) => {
     setSelectedTable(table);
 
     if (table.status === TABLE_STATUS.AVAILABLE) {
       changeStatus(table.id, TABLE_STATUS.OCCUPIED);
-      setShowWaiter(true);
-    } else if (table.status === TABLE_STATUS.OCCUPIED || table.status === TABLE_STATUS.RESERVED) {
-      setShowWaiter(true);
+    } else if (table.status !== TABLE_STATUS.CLEANING) {
+      // Stolli joylar allaqachon band yoki bron qilingan.
+      return
     } else {
       alert('Bu stol hozir tozalanmoqda');
     }
@@ -46,17 +44,6 @@ const Tables = () => {
           </button>
         </div>
       </div>
-
-      {/* Modal */}
-      {showWaiter && selectedTable && (
-        <Waiter
-          table={selectedTable}
-          onClose={() => {
-            setShowWaiter(false);
-            setSelectedTable(null);
-          }}
-        />
-      )}
     </div>
   );
 };

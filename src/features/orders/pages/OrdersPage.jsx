@@ -2,10 +2,10 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { ArrowRightLeft, ClipboardList, RefreshCw } from 'lucide-react'
+import { ArrowRightLeft, ClipboardList, RefreshCw, XCircle } from 'lucide-react'
 import { toast } from 'react-toastify'
 
-import { getOrders, updateOrderStatus, transferOrderTable } from '../api'
+import { getOrders, updateOrderStatus, transferOrderTable, cancelOrder } from '../api'
 import { getTables } from '../../tables/api'
 import { unwrapList, unwrapPagination, apiErrorMessage, formatSom, formatTime } from '../../../lib/api'
 import {
@@ -16,7 +16,7 @@ import {
   NEXT_ORDER_STATUS,
   ROLES,
 } from '../../../constants/roles'
-import { Badge, Button, Card, EmptyState, Modal, PageHeader, Select, Skeleton } from '../../../components/ui'
+import { Badge, Button, Card, EmptyState, Input, Modal, PageHeader, Select, Skeleton } from '../../../components/ui'
 
 const PAGE_SIZE = 10
 
@@ -28,8 +28,10 @@ export default function OrdersPage() {
   const [paid, setPaid] = useState('')
   const [page, setPage] = useState(1)
   const [transferOrder, setTransferOrder] = useState(null)
+  const [cancelTarget, setCancelTarget] = useState(null)
 
   const canTransfer = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER].includes(role)
+  const canCancel = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER, ROLES.CASHIER].includes(role)
 
   const params = useMemo(() => {
     const p = { page, limit: PAGE_SIZE }
@@ -54,6 +56,17 @@ export default function OrdersPage() {
       queryClient.invalidateQueries({ queryKey: ['tables'] })
     },
     onError: (error) => toast.error(apiErrorMessage(error, 'Holatni o\'zgartirib bo\'lmadi')),
+  })
+
+  const cancelMutation = useMutation({
+    mutationFn: ({ id, reason }) => cancelOrder(id, reason),
+    onSuccess: () => {
+      toast.success('Buyurtma bekor qilindi')
+      setCancelTarget(null)
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['tables'] })
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Buyurtmani bekor qilib bo'lmadi")),
   })
 
   const orders = ordersQuery.data?.orders ?? []
@@ -142,10 +155,12 @@ export default function OrdersPage() {
               key={order._id}
               order={order}
               canTransfer={canTransfer}
+              canCancel={canCancel}
               onAdvance={(nextStatus) =>
                 statusMutation.mutate({ id: order._id, nextStatus })
               }
               onTransfer={() => setTransferOrder(order)}
+              onCancel={() => setCancelTarget(order)}
               isBusy={statusMutation.isPending}
             />
           ))}
@@ -179,14 +194,22 @@ export default function OrdersPage() {
           queryClient.invalidateQueries({ queryKey: ['tables'] })
         }}
       />
+
+      <CancelOrderModal
+        order={cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={(reason) => cancelMutation.mutate({ id: cancelTarget._id, reason })}
+        isLoading={cancelMutation.isPending}
+      />
     </div>
   )
 }
 
-function OrderRow({ order, onAdvance, onTransfer, canTransfer, isBusy }) {
+function OrderRow({ order, onAdvance, onTransfer, onCancel, canTransfer, canCancel, isBusy }) {
   const next = NEXT_ORDER_STATUS[order.status]
   const paidTotal = order.paidTotal ?? 0
   const isPaid = order.isPaid ?? paidTotal >= order.totalAmount
+  const isActive = order.status !== ORDER_STATUS.CLOSED && order.status !== ORDER_STATUS.CANCELLED
 
   return (
     <Card className="flex flex-wrap items-center gap-4">
@@ -222,9 +245,14 @@ function OrderRow({ order, onAdvance, onTransfer, canTransfer, isBusy }) {
       </div>
 
       <div className="flex gap-2">
-        {canTransfer && order.status !== ORDER_STATUS.CLOSED && (
+        {canTransfer && isActive && (
           <Button variant="ghost" onClick={onTransfer} title="Boshqa stolga o'tkazish">
             <ArrowRightLeft className="h-4 w-4" />
+          </Button>
+        )}
+        {canCancel && isActive && (
+          <Button variant="ghost" onClick={onCancel} title="Buyurtmani bekor qilish" className="text-rose-600 hover:text-rose-700">
+            <XCircle className="h-4 w-4" />
           </Button>
         )}
         {next && (
@@ -285,6 +313,44 @@ function TransferTableModal({ order, onClose, onDone }) {
         value={tableId}
         onChange={(e) => setTableId(e.target.value)}
         options={options}
+      />
+    </Modal>
+  )
+}
+
+function CancelOrderModal({ order, onClose, onConfirm, isLoading }) {
+  const [reason, setReason] = useState('')
+
+  if (!order) return null
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={`Stol ${order.table?.number ?? ''} buyurtmasini bekor qilish`}
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Orqaga
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => onConfirm(reason)}
+            isLoading={isLoading}
+          >
+            Ha, bekor qilinsin
+          </Button>
+        </>
+      }
+    >
+      <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+        Rostdan ham ushbu buyurtmani bekor qilmoqchimisiz? Stol holati qayta bo'shatiladi.
+      </p>
+      <Input
+        label="Bekor qilish sababi (ixtiyoriy)"
+        placeholder="Masalan: mijoz voz kechdi"
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
       />
     </Modal>
   )

@@ -1,90 +1,110 @@
-import React, { useState } from 'react';
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { getAttendance } from '../attendanceApi'
+import { Table, Button } from '../../../components/ui'
 
-export default function AttendanceTable({ attendances = [], onRefresh }) {
-  const [filterRole, setFilterRole] = useState('all');
+const STATUS_LABELS = {
+    present: 'Keldi',
+    absent: 'Kelmadi',
+    late: 'Kechikdi',
+    'half-day': "Yarim kun",
+}
 
-  const mockLogs = [
-    { id: '1', name: 'Zulfiqor', role: 'admin', date: '2026-07-30', checkIn: '08:45', checkOut: '18:15', status: 'Kelgan', hours: '9.5 soat' },
-    { id: '2', name: 'Madina', role: 'cashier', date: '2026-07-30', checkIn: '09:00', checkOut: '17:30', status: 'Kelgan', hours: '8.5 soat' },
-    { id: '3', name: 'Abdugani', role: 'waiter', date: '2026-07-30', checkIn: '09:15', checkOut: '—', status: 'Ishda', hours: '6.0 soat' },
-    { id: '4', name: 'Ziyodilla', role: 'chef', date: '2026-07-30', checkIn: '08:30', checkOut: '—', status: 'Ishda', hours: '6.8 soat' },
-    { id: '5', name: 'Izzat', role: 'waiter', date: '2026-07-30', checkIn: '10:00', checkOut: '16:00', status: 'Kechikkan', hours: '6.0 soat' },
-  ];
+const STATUS_STYLES = {
+    present: 'text-green-600',
+    absent: 'text-red-500',
+    late: 'text-yellow-600',
+    'half-day': 'text-blue-500',
+}
 
-  const list = attendances.length > 0 ? attendances : mockLogs;
-  const filtered = filterRole === 'all' ? list : list.filter(item => item.role === filterRole);
+function formatTime(iso) {
+    if (!iso) return '—'
+    return new Date(iso).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
+}
 
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-4">
+function formatDate(iso) {
+    if (!iso) return '—'
+    return new Date(iso).toLocaleDateString('uz-UZ')
+}
+
+function calcHours(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return '—'
+    const diffMs = new Date(checkOut) - new Date(checkIn)
+    if (diffMs <= 0) return '—'
+    const hours = diffMs / (1000 * 60 * 60)
+    return `${hours.toFixed(1)} soat`
+}
+
+export default function AttendanceTable() {
+    const [page, setPage] = useState(1)
+
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['attendance', page],
+        queryFn: async () => {
+            const res = await getAttendance({ page, limit: 20 })
+            const payload = res.data?.data ?? res.data
+            return {
+                items: payload?.attendances ?? [],
+                pagination: res.data?.pagination ?? null,
+            }
+        },
+    })
+
+    const columns = [
+        {
+            key: 'employee',
+            title: 'Xodim',
+            render: (row) => row.employee?.name ?? row.employee ?? '—',
+        },
+        { key: 'date', title: 'Sana', render: (row) => formatDate(row.date) },
+        { key: 'checkIn', title: 'Kelgan vaqti', render: (row) => formatTime(row.checkIn) },
+        { key: 'checkOut', title: 'Ketgan vaqti', render: (row) => formatTime(row.checkOut) },
+        {
+            key: 'hours',
+            title: 'Ishlangan soat',
+            render: (row) => calcHours(row.checkIn, row.checkOut),
+        },
+        {
+            key: 'status',
+            title: 'Holat',
+            render: (row) => (
+                <span className={STATUS_STYLES[row.status] ?? 'text-gray-400'}>
+                    {STATUS_LABELS[row.status] ?? row.status}
+                </span>
+            ),
+        },
+    ]
+
+    if (isError) {
+        return <p className="text-red-500">Davomat ma'lumotlarini yuklashda xatolik yuz berdi</p>
+    }
+
+    return (
         <div>
-          <h3 className="text-lg font-bold text-slate-100">📅 Xodimlar Davomati va Ish Vaqtlari</h3>
-          <p className="text-xs text-slate-400">Kunlik kirish-chiqish va ishlangan soatlar hisobi</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-          >
-            <option value="all">Barcha rollar</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Menejer</option>
-            <option value="cashier">Kassir</option>
-            <option value="waiter">Ofitsiant</option>
-            <option value="chef">Oshpaz</option>
-          </select>
-          <button
-            onClick={onRefresh}
-            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium rounded-xl transition"
-          >
-            🔄 Yangilash
-          </button>
-        </div>
-      </div>
+            <Table
+                columns={columns}
+                data={data?.items ?? []}
+                isLoading={isLoading}
+                emptyMessage="Davomat yozuvlari topilmadi"
+            />
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-slate-950 text-xs text-slate-400 uppercase tracking-wider">
-            <tr>
-              <th className="py-3 px-4 rounded-l-xl">Xodim</th>
-              <th className="py-3 px-4">Rol</th>
-              <th className="py-3 px-4">Sana</th>
-              <th className="py-3 px-4">Check-In</th>
-              <th className="py-3 px-4">Check-Out</th>
-              <th className="py-3 px-4">Ishlangan soat</th>
-              <th className="py-3 px-4 rounded-r-xl">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60">
-            {filtered.map((item) => (
-              <tr key={item.id} className="hover:bg-slate-800/40 transition">
-                <td className="py-3.5 px-4 font-semibold text-slate-100">{item.name}</td>
-                <td className="py-3.5 px-4">
-                  <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg uppercase tracking-wide bg-slate-800 text-amber-400 border border-slate-700">
-                    {item.role}
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-slate-400">{item.date}</td>
-                <td className="py-3.5 px-4 font-mono text-emerald-400">{item.checkIn}</td>
-                <td className="py-3.5 px-4 font-mono text-amber-400">{item.checkOut}</td>
-                <td className="py-3.5 px-4 text-slate-200">{item.hours}</td>
-                <td className="py-3.5 px-4">
-                  <span
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg ${
-                      item.status === 'Kelgan' || item.status === 'Ishda'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
+            {data?.pagination && data.pagination.totalPages > 1 && (
+                <div className="mt-4 flex items-center justify-center gap-2">
+                    <Button variant="secondary" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+                        Oldingi
+                    </Button>
+                    <span className="px-2 text-sm text-gray-500">
+                        {page} / {data.pagination.totalPages}
+                    </span>
+                    <Button
+                        variant="secondary"
+                        disabled={page >= data.pagination.totalPages}
+                        onClick={() => setPage((p) => p + 1)}
+                    >
+                        Keyingi
+                    </Button>
+                </div>
+            )}
+        </div>
+    )
 }

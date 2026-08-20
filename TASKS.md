@@ -1,69 +1,55 @@
-# RestoFlow Frontend — Vazifalar (kim nima qiladi)
+# RestoFlow — Jamoa Vazifalari (Team Task Assignments)
 
-Jamoa: 6 frontend dasturchi. Har kim o'z `features/<modul>` papkasiga egalik qiladi.
-To'liq arxitektura: [ARCHITECTURE.md](./ARCHITECTURE.md)
+> **Muddatlar:**
+> - **P0:** 18-Avgust (Bugun)
+> - **P1:** 21-Avgust
+> - **P2:** 25-Avgust
+> - **Demo:** Juma 17:00
+
+---
 
 ## Vazifalar taqsimoti
 
-| Dasturchi | Papka(lar) | Vazifa |
-|-----------|-----------|--------|
-| **Fayoz** | `features/auth`, `features/employees`, `features/settings`, `services/axios.js` | Auth, token/interceptor, Xodimlar, Rollar & Sozlamalar |
-| **Ziyoddila** | `layouts/`, `routes/`, `features/kitchen`, `services/socket.js` | App Shell (sidebar/navbar/theme), ProtectedRoute, i18n, Oshxona paneli (real-time) |
-| **Izzat** | `features/menu`, `features/qr-menu` | Kategoriya & Taomlar CRUD (rasm, qidiruv, filter), QR-menyu |
-| **Abdugani** | `features/tables`, `features/orders` | Stollar xaritasi, Ofitsiant ekrani (savat → buyurtma), stol ko'chirish |
-| **Madina** | `features/dashboard`, `features/cashier` | Dashboard + Analitika (ApexCharts), Kassa (to'lov, chek, split bill) |
-| **Behruz Shogirt** | `components/ui`, `components/common`, `features/reservations`, `features/notifications` | Umumiy UI komponentlar, Bron (kalendar), Bildirishnomalar (real-time) |
+| Dasturchi | Modullar & Papkalar | Asosiy Vazifalar | Ustuvorlik |
+|-----------|--------------------|-------------------|------------|
+| 🟢 **Zulfiqor** | `build`, `docs/EVENTS.md`, `backend agreements` | Build fix (100% yashil), Socket eventlar shartnomasi (`EVENTS.md`), backend kelishuvlari, `TASKS.md` sinxronizatsiyasi | **P0** |
+| 🔵 **Ziyodilla** | `features/kitchen`, `features/tables`, `features/orders` | Oshxona paneli + Stollar/Ofitsiant moduli (Abdugani integratsiyasi), socket lifecycle bug fiх | **P0 / P1** |
+| 🟣 **Izzat** | `features/menu`, `features/qr-menu` | Menyu (localStorage → API o'tkazish, ruscha → o'zbekcha, ₽ → so'm o'g'irish, maxsus CSS → Tailwind'ga o'tkazish) | **P1** |
+| 🟠 **Fayoz** | `features/notifications`, `features/cashier` | Bildirishnomalarni backendga ulash + Kassa paneli (Madinaning branch'da qolgan ~1460 qator kodini `main`ga birlashtirish) | **P1** |
+| 🟤 **Abdurahmon** | `infra`, `ci`, `store/`, `api/` | GitHub Actions CI (build/test har PR'da otilishi), ikkita store va ikkita API qatlamini yagona standartga keltirish | **P1 / P2** |
 
 ---
 
-## Batafsil vazifalar
+## Batafsil Topshiriqlar
 
-### 👤 Fayoz — Auth va Ruxsatlar
-- [ ] Login / Register / Parolni tiklash (React Hook Form + Zod)
-- [ ] Token saqlash + axios interceptor (refresh) — `services/axios.js`
-- [ ] Redux `auth` slice
-- [ ] Profil sahifasi
-- [ ] Xodimlar (Employees) — ro'yxat, CRUD, rol biriktirish
-- [ ] Rollar & Ruxsatlar + Sozlamalar sahifasi
+### 🟢 Zulfiqor — Build & Event Standartlari (P0)
+- [x] **Build Fix:** Frontend `npm run build` hamda Backend `npm test` 100% yashil o'tishini ta'minlash (`OrdersPage.jsx` JSX va sintaksis xatolari tuzatildi).
+- [x] **EVENTS.md:** Backend va Frontend o'rtasidagi barcha Socket.io eventlarining yagona kanonik hujjatini yaratish (`docs/EVENTS.md`).
+- [x] **Order Cancellation:** Buyurtmani bekor qilish (`bekor_qilingan` statusi va `/orders/:id/cancel` API) backend hamda UI darajasida to'liq ishlatish.
+- [x] **TASKS.md Sync:** Barcha jamoa a'zolari uchun vazifalarni GitHub repo'siga push qilish.
 
-### 👤 Ziyoddila — App Shell + Oshxona
-- [ ] Layout: Sidebar, Navbar, Dark/Light mode, responsive
-- [ ] ProtectedRoute (rolga qarab) + React Router marshrutlari
-- [ ] i18next sozlash (uz / ru / en)
-- [ ] Oshxona paneli: Pending → Preparing → Ready
-- [ ] Socket.io real-time + "Tayyor" tugmasi
+### 🔵 Ziyodilla — Oshxona & Stollar Integratsiyasi (P0 / P1)
+- [x] Oshxona panelini real `/orders` API endpointiga ulash.
+- [ ] Stollar hamda Ofitsiant panelidagi socket ulanishlari aylanasini (lifecycle bug) bartaraf etish.
+- [ ] Abdugani modulini stollar va buyurtmalar bilan to'liq integratsiya qilish.
 
-### 👤 Izzat — Menyu + QR-menyu
-- [ ] Kategoriyalar CRUD
-- [ ] Taomlar CRUD + rasm yuklash, narx, mavjudlik
-- [ ] Qidiruv + filter + pagination
-- [ ] QR-menyu (mijoz ekrani, mobil-first)
+### 🟣 Izzat — Menyu Standartizatsiyasi (P1)
+- [ ] Menyu ma'lumotlarini localStorage'dan to'liq chiqarib, real API so'rovlariga o'tkazish.
+- [ ] Barcha matnlarni ruschadan o'zbekchaga o'tkazish.
+- [ ] Valyuta belgisini ₽ (rubl) dan **so'm**ga o me'yorlashtirish.
+- [ ] Eskirgan `MenuPage.css` va moslashtirilgan CSS'larni sof Tailwind CSS klasslariga o'tkazish.
 
-### 👤 Abdugani — Stollar + Ofitsiant ekrani
-- [ ] Stollar xaritasi (grid, zonalar, holat ranglari)
-- [ ] Ofitsiant ekrani: stol → savat → buyurtma yuborish
-- [ ] Miqdor o'zgartirish + izoh
-- [ ] Stolni ko'chirish (transfer)
+### 🟠 Fayoz — Bildirishnomalar & Kassa Integratsiyasi (P1)
+- [ ] Real-time bildirishnomalarni (notifications) backend socket va API'ga ulash.
+- [ ] Madinaning alohida branch'ida qolib ketgan ~1460 qator kassa va dashboard kodlarini ko'rib chiqish hamda `main`ga muvaffaqiyatli merge qilish.
 
-### 👤 Madina — Dashboard + Kassa
-- [ ] Dashboard: statistika kartalari
-- [ ] Analitika: ApexCharts grafiklar + Excel/PDF eksport
-- [ ] Kassa: to'lov (naqd/karta/Click/Payme), chek chiqarish
-- [ ] Split bill + to'lovlar tarixi
-
-### 👤 Behruz Shogirt — Umumiy komponentlar + Bron + Bildirishnoma
-- [ ] Umumiy UI: Button, Input, Modal, Table, Skeleton, Toast
-- [ ] Empty state + Loading komponentlari
-- [ ] Bron (Reservation) — kalendar bilan
-- [ ] Bildirishnomalar — socket real-time
+### 🟤 Abdurahmon — CI/CD & Arxitektura Birlashtirish (P1 / P2)
+- [ ] GitHub Actions CI workflow sozlash (har bir Pull Request'da `npm test` va `npm run build` avtomatik tekshirilishi).
+- [ ] Loyihadagi dublikat 2 xil store va 2 xil API qatlamlarini (Zustand + Redux / services vs features api) yagona standartga keltirish.
 
 ---
 
-## "Tayyor" mezoni (Definition of Done)
-UI + API integratsiya + loading/skeleton + validatsiya + error handling + responsive.
-
-## Ishlash tartibi
-1. `git checkout develop && git pull`
-2. `git checkout -b feature/<modul>` (masalan `feature/menu`)
-3. Ishla → commit → `git push origin feature/<modul>`
-4. GitHub'da Pull Request och → 1 kishi review → `develop`ga merge
+## Definition of Done ("Tayyor" Mezoni)
+1. Kod barcha lint va build tekshiruvlaridan o'tgan (`npm run build` prodyuser xatosiz).
+2. Backend va Frontend integratsiyasi real API va socket eventlar orqali ishlaydi.
+3. Yangi o'zgarishlar tegishli PR (Pull Request) orqali review qilinib `main`ga merge qilingan.
