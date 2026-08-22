@@ -1,61 +1,87 @@
-// Oshxona paneli — buyurtmalar Kutilmoqda → Tayyorlanmoqda → Tayyor.
-// Socket.io orqali real-time yangilanadi.
-// Mas'ul: Ziyodulla.
+// Oshxona ekrani (KDS) — Kutilmoqda / Tayyorlanmoqda / Tayyor ustunlari.
+// Oshpaz "Tayyorlashni boshlash" / "Tayyor" tugmalari orqali holatni suradi.
+// Yangi buyurtma kelganda ovozli signal (chime + ovozli xabar) beriladi — sound
+// toggle holati localStorage'da saqlanadi. Mock rejim yo'q — backend to'liq ulangan.
 import { useTranslation } from 'react-i18next'
-import { Radio, WifiOff } from 'lucide-react'
+import { RefreshCw, Volume2, VolumeX } from 'lucide-react'
+
+import { ORDER_STATUS } from '../../../constants/roles'
+import { Button, Card, PageHeader } from '../../../components/ui'
+import { apiErrorMessage } from '../../../lib/api'
 import { useKitchenOrders } from '../hooks/useKitchenOrders'
 import KitchenColumn from '../components/KitchenColumn'
-import { ORDER_STATUS } from '../../../constants/roles'
+import LanguageSwitcher from '../../../components/common/LanguageSwitcher'
 
-const CONNECTION_META = {
-  live: { icon: Radio, className: 'text-leaf', labelKey: 'kitchen.connectionLive' },
-  connecting: { icon: Radio, className: 'text-slate', labelKey: 'kitchen.connectionLive' },
-  offline: { icon: WifiOff, className: 'text-cherry', labelKey: 'kitchen.connectionOffline' },
-}
+const COLUMN_IDS = ['waiting', 'making', 'complete']
 
 export default function KitchenPage() {
   const { t } = useTranslation()
-  const { columns, connection, setStatus } = useKitchenOrders()
-  const meta = CONNECTION_META[connection] ?? CONNECTION_META.connecting
-  const ConnIcon = meta.icon
+  const {
+    columns,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+    setStatus,
+    soundEnabled,
+    toggleSound,
+    testSound,
+  } = useKitchenOrders()
 
-  const onStartPreparing = (id) => setStatus(id, ORDER_STATUS.IN_KITCHEN)
-  const onMarkReady = (id) => setStatus(id, ORDER_STATUS.READY)
+  const onStartPreparing = (id) => setStatus(id, ORDER_STATUS.IN_KITCHEN, 'making')
+  const onMarkReady = (id) => setStatus(id, ORDER_STATUS.READY, 'complete')
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="font-display text-2xl text-charcoal dark:text-fog">
-            {t('kitchen.title')}
-          </h2>
-          <p className="text-sm text-slate">{t('kitchen.subtitle')}</p>
-        </div>
-        <span className={`flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1.5 text-xs font-medium dark:bg-white/10 ${meta.className}`}>
-          <ConnIcon size={14} />
-          {t(meta.labelKey)}
-        </span>
-      </div>
+      <PageHeader
+        title={t('kitchen.title')}
+        subtitle={t('kitchen.subtitle')}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="secondary" onClick={testSound} title={t('testSound')}>
+              {t('testSound')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={toggleSound}
+              aria-pressed={soundEnabled}
+              title={soundEnabled ? t('soundOn') : t('soundOff')}
+            >
+              {soundEnabled ? (
+                <Volume2 className="mr-2 h-4 w-4" />
+              ) : (
+                <VolumeX className="mr-2 h-4 w-4" />
+              )}
+              {soundEnabled ? t('soundOn') : t('soundOff')}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => refetch()}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+              {t('refresh')}
+            </Button>
+            <LanguageSwitcher />
+          </div>
+        }
+      />
 
-      <div className="flex gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible">
-        <KitchenColumn
-          id="pending"
-          orders={columns.pending}
-          onStartPreparing={onStartPreparing}
-          onMarkReady={onMarkReady}
-        />
-        <KitchenColumn
-          id="preparing"
-          orders={columns.preparing}
-          onStartPreparing={onStartPreparing}
-          onMarkReady={onMarkReady}
-        />
-        <KitchenColumn
-          id="ready"
-          orders={columns.ready}
-          onStartPreparing={onStartPreparing}
-          onMarkReady={onMarkReady}
-        />
+      {isError && (
+        <Card className="mb-4">
+          <p className="text-sm text-rose-600">{apiErrorMessage(error, t('kitchen.loadFailed'))}</p>
+        </Card>
+      )}
+
+      <div className="flex items-start gap-4 overflow-x-auto pb-2 lg:grid lg:grid-cols-3 lg:items-start lg:overflow-visible">
+        {COLUMN_IDS.map((id) => (
+          <KitchenColumn
+            key={id}
+            id={id}
+            orders={columns[id]}
+            isLoading={isLoading}
+            onStartPreparing={onStartPreparing}
+            onMarkReady={onMarkReady}
+          />
+        ))}
       </div>
     </div>
   )
