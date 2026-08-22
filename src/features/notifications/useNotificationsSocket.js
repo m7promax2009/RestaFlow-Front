@@ -9,7 +9,7 @@ import { socket } from '../../services/socket'
 import { getTables } from './api'
 import { addNotification, fetchNotifications } from './notificationsSlice'
 import { toast } from '../../components/ui'
-import { ROLES } from '../../constants/roles'
+import { ROLES, ORDER_STATUS } from '../../constants/roles'
 
 // TASDIQLANMAGAN TAXMIN: Table modelida ofitsiantga biriktirish maydoni bor deb
 // taxmin qilinmoqda ("waiter" yoki "assignedWaiter"). Backend kodida bu maydon
@@ -119,17 +119,40 @@ export default function useNotificationsSocket() {
             }
         }
 
+        // Backend `order:ready` yubormaydi — "tayyor" holati status eventidan aniqlanadi.
+        // Kanonik ro'yxat: Backend emit qiladigan eventlar (EVENTS.md + order.controller.js).
+        const handleStatusEvent = (payload) => {
+            invalidateTablesAndOrders()
+            const status = payload?.status ?? payload?.order?.status
+            if (status === ORDER_STATUS.READY) {
+                handleOrderReady({
+                    orderId: payload?.orderId ?? payload?._id ?? payload?.order?._id,
+                    table: payload?.table ?? payload?.order?.table,
+                })
+            }
+        }
+
         socket.on('order:ready', handleOrderReady)
         socket.on('order:new', handleOrderEvent)
+        socket.on('order:created', handleOrderEvent)
         socket.on('order:statusChanged', handleOrderEvent)
+        socket.on('order:status_changed', handleStatusEvent)
+        socket.on('order:status_updated', handleStatusEvent)
+        socket.on('order:cancelled', handleOrderEvent)
         socket.on('table:updated', handleTableUpdated)
+        socket.on('table:status_updated', handleTableUpdated)
         socket.on('notification:new', handleNotificationNew)
 
         return () => {
             cancelled = true
             socket.off('order:ready', handleOrderReady)
             socket.off('order:new', handleOrderEvent)
+            socket.off('order:created', handleOrderEvent)
             socket.off('order:statusChanged', handleOrderEvent)
+            socket.off('order:status_changed', handleStatusEvent)
+            socket.off('order:status_updated', handleStatusEvent)
+            socket.off('order:cancelled', handleOrderEvent)
+            socket.off('table:status_updated', handleTableUpdated)
             socket.off('table:updated', handleTableUpdated)
             socket.off('notification:new', handleNotificationNew)
         }
