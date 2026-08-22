@@ -1,4 +1,4 @@
-// Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
+﻿// Ilova qobig'i вЂ” sidebar (rolga qarab filtrlangan), topbar va kontent.
 // Menyu bandlari constants/navigation.js dan olinadi (marshrutlar bilan bir manba).
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -114,7 +114,7 @@ export default function AppLayout() {
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 bg-slate-900 lg:block">{sidebar}</aside>
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 bg-slate-900 lg:block">{sidebar}</aside>
 
       {/* Mobil sidebar */}
       {mobileOpen && (
