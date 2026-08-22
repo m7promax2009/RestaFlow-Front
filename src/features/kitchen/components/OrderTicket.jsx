@@ -3,7 +3,7 @@
 // Mas'ul: Ziyodulla.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, CheckCircle2, StickyNote } from 'lucide-react'
+import { ArrowRight, CheckCircle2, MessageSquare, StickyNote } from 'lucide-react'
 import { ORDER_STATUS } from '../../../constants/roles'
 
 function useElapsedMinutes(createdAt) {
@@ -68,21 +68,24 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
           </span>
         </div>
 
-        <ul className="mt-3 space-y-1 border-t border-dashed border-black/10 pt-3 text-sm dark:border-ink-border">
-          {order.items.map((item, index) => (
-            <li key={`${item.product}-${index}`} className="text-charcoal dark:text-fog">
-              <div className="flex justify-between gap-2">
-                <span>{item.product}</span>
-                <span className="font-mono text-slate">×{item.quantity}</span>
-              </div>
-              {item.note && (
-                <p className="mt-0.5 flex items-start gap-1 text-xs text-amber-dim dark:text-amber">
-                  <StickyNote size={11} className="mt-0.5 shrink-0" />
-                  {item.note}
-                </p>
-              )}
-            </li>
-          ))}
+        <ul className="mt-3 space-y-2 border-t border-dashed border-black/10 pt-3 text-sm dark:border-ink-border">
+          {order.items?.map((item, index) => {
+            const itemNote = item.note || item.comment || item.notes
+            return (
+              <li key={`${item.product}-${index}`} className="flex flex-col gap-0.5 text-charcoal dark:text-fog">
+                <div className="flex items-baseline justify-between gap-2 font-medium">
+                  <span>{item.product}</span>
+                  <span className="font-mono text-slate shrink-0">×{item.quantity}</span>
+                </div>
+                {itemNote && (
+                  <p className="mt-0.5 flex items-start gap-1.5 rounded bg-amber-500/10 px-2 py-1 text-xs font-normal text-amber-700 dark:text-amber-300">
+                    <MessageSquare size={12} className="mt-0.5 shrink-0 opacity-80" />
+                    <span>{itemNote}</span>
+                  </p>
+                )}
+              </li>
+            )
+          })}
         </ul>
 
         {order.notes && (

@@ -11,11 +11,11 @@ export function normalizeKitchenOrder(o) {
     waiter: typeof o.waiter === 'object' ? (o.waiter?.name ?? '—') : (o.waiter ?? '—'),
     status: o.status,
     createdAt: o.createdAt || new Date().toISOString(),
-    notes: o.notes || '',
+    notes: o.notes || o.note || '',
     items: (o.items ?? []).map((i) => ({
       product: i.name ?? i.product,
       quantity: i.quantity,
-      note: i.note || '',
+      note: i.note || i.comment || i.notes || i.instruction || '',
     })),
   }
 }

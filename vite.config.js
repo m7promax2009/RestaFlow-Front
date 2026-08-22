@@ -11,4 +11,13 @@ export default defineConfig({
       '@components': path.resolve(__dirname, 'src/features/cashier/components'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://backend-production-109c0.up.railway.app',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 })

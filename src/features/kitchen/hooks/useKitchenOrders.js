@@ -1,9 +1,9 @@
-// Oshxona buyurtmalari — boshlang'ich yuklash + Socket.io real-time yangilanish.
-// Mas'ul: Ziyodulla.
 import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
 import { socket, connectSocket, disconnectSocket } from '../../../services/socket'
 import { fetchKitchenOrders, updateOrderStatus, normalizeKitchenOrder } from '../api'
 import { ORDER_STATUS } from '../../../constants/roles'
+import { playNotificationSound } from '../../../utils/sound'
 
 const BOARD_STATUSES = [ORDER_STATUS.NEW, ORDER_STATUS.IN_KITCHEN, ORDER_STATUS.READY]
 
@@ -62,6 +62,8 @@ export function useKitchenOrders() {
     const handleConnect = () => setConnection('live')
     const handleDisconnect = () => setConnection('offline')
     const handleNewOrder = (order) => {
+      playNotificationSound()
+      toast.info('🔔 Oshxonaga yangi buyurtma keldi!', { autoClose: 4000 })
       if (order && order.orderId) reloadOrders()
       else upsertOrder(order)
     }
@@ -74,7 +76,7 @@ export function useKitchenOrders() {
     socket.on('disconnect', handleDisconnect)
     socket.on('connect_error', handleDisconnect)
     socket.on('order:new', handleNewOrder)
-    socket.on('kitchen:new_order', reloadOrders)
+    socket.on('kitchen:new_order', handleNewOrder)
     socket.on('order:statusChanged', handleStatusChanged)
     socket.on('order:status_changed', handleStatusChanged)
 

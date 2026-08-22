@@ -3,7 +3,10 @@
 import axios from 'axios'
 import { disconnectSocket } from './socket'
 
-const baseURL = import.meta.env.VITE_API_URL || 'https://backend-production-109c0.up.railway.app/api'
+const rawApiUrl = import.meta.env.VITE_API_URL
+const baseURL = import.meta.env.DEV
+  ? (rawApiUrl && !rawApiUrl.startsWith('http') ? rawApiUrl : '/api')
+  : (rawApiUrl || 'https://backend-production-109c0.up.railway.app/api')
 
 const api = axios.create({
   baseURL,
