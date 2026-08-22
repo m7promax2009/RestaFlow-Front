@@ -10,6 +10,7 @@ import { ROLES, ROLE_LABELS } from '../../../constants/roles'
 import { can } from '../../../constants/permissions'
 import { Input, Table, Button, Modal } from '../../../components/ui'
 import AttendanceTable from '../components/AttendanceTable'
+import AuditLogPage from './AuditLogPage'
 
 const newEmployeeSchema = z.object({
     name: z.string().min(2, "Kamida 2 ta belgi"),
@@ -25,7 +26,7 @@ export default function EmployeesPage() {
     const canChangeRole = can(currentUser?.role, 'employees:changeRole')
     const canDelete = can(currentUser?.role, 'employees:delete')
 
-    const [activeTab, setActiveTab] = useState('employees') // 'employees' | 'attendance'
+    const [activeTab, setActiveTab] = useState('employees') // 'employees' | 'attendance' | 'audit'
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState('')
     const [page, setPage] = useState(1)
@@ -187,6 +188,16 @@ export default function EmployeesPage() {
                 >
                     Davomat
                 </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('audit')}
+                    className={`px-4 py-2 text-sm font-medium ${activeTab === 'audit'
+                            ? 'border-b-2 border-blue-600 text-blue-600'
+                            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                        }`}
+                >
+                    Audit log
+                </button>
             </div>
 
             {activeTab === 'employees' && (
@@ -307,6 +318,8 @@ export default function EmployeesPage() {
             )}
 
             {activeTab === 'attendance' && <AttendanceTable />}
+
+            {activeTab === 'audit' && <AuditLogPage />}
         </div>
     )
 }
