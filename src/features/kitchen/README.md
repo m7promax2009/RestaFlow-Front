@@ -25,9 +25,8 @@ Swagger: `https://backend-production-11b7.up.railway.app/api-docs`
 - [ ] Socket eventlari nomi: `order:new`, `order:statusChanged` backendda shu nom bilanmi
 - [ ] Order obyektida `waiter`/`number` maydonlari bormi (bo'lmasa UI ularsiz ham ishlaydi)
 
-Backend javob bermasa yoki manzil noto'g'ri bo'lsa, panel avtomatik demo
-ma'lumotlarga (`mockData.js`) tushadi va navbar'da "Demo rejim" belgisi chiqadi —
-shunday qilib boshqa dasturchilar backend holatidan qat'i nazar UI'ni ko'rishlari mumkin.
+Backend javob bermasa yoki manzil noto'g'ri bo'lsa, panel "offline" holatiga
+o'tadi va qayta yuklash tugmasi orqali qayta ulanish mumkin.
 
 ## Tuzilma
 ```
@@ -40,5 +39,4 @@ kitchen/
   pages/
     KitchenPage.jsx     # sahifa (route: /kitchen)
   api.js                # backend so'rovlari (axios)
-  mockData.js           # demo ma'lumotlar (backend javob bermasa)
 ```
