@@ -70,9 +70,17 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
 
         <ul className="mt-3 space-y-1 border-t border-dashed border-black/10 pt-3 text-sm dark:border-ink-border">
           {order.items.map((item, index) => (
-            <li key={`${item.product}-${index}`} className="flex justify-between gap-2 text-charcoal dark:text-fog">
-              <span>{item.product}</span>
-              <span className="font-mono text-slate">×{item.quantity}</span>
+            <li key={`${item.product}-${index}`} className="text-charcoal dark:text-fog">
+              <div className="flex justify-between gap-2">
+                <span>{item.product}</span>
+                <span className="font-mono text-slate">×{item.quantity}</span>
+              </div>
+              {item.note && (
+                <p className="mt-0.5 flex items-start gap-1 text-xs text-amber-dim dark:text-amber">
+                  <StickyNote size={11} className="mt-0.5 shrink-0" />
+                  {item.note}
+                </p>
+              )}
             </li>
           ))}
         </ul>
