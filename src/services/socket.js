@@ -2,7 +2,8 @@
 // Mas'ul: Ziyoddila (infra). Foydalanadi: kitchen, orders, notifications.
 import { io } from 'socket.io-client'
 
-const URL = import.meta.env.VITE_SOCKET_URL || 'https://backend-production-109c0.up.railway.app'
+// Dev'da Vite proxy'si HTTP so'rovlari bilan birga socket'ni ham uzatadi.
+const URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? window.location.origin : 'https://backend-production-109c0.up.railway.app')
 
 export const socket = io(URL, {
   autoConnect: false,

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowRightLeft, Minus, Plus, ShoppingCart, Trash2, UtensilsCrossed } from 'lucide-react'
 import { toast } from 'react-toastify'
+import { useSearchParams } from 'react-router-dom'
 
 import { createOrder, getOrders, transferOrderTable, updateOrderStatus } from '../api'
 import { getTables } from '../../tables/api'
@@ -31,8 +32,10 @@ import {
 
 export default function WaiterPage() {
   const queryClient = useQueryClient()
+  const [searchParams] = useSearchParams()
 
-  const [tableId, setTableId] = useState('')
+  // /tables sahifasidan kelganda stol oldindan tanlangan bo'ladi.
+  const [tableId, setTableId] = useState(() => searchParams.get('table') ?? '')
   const [categoryId, setCategoryId] = useState('')
   const [search, setSearch] = useState('')
   const [cart, setCart] = useState([]) // [{ product, name, price, quantity }]

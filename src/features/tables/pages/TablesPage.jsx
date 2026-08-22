@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { Grid3X3, Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { toast } from 'react-toastify'
 
@@ -35,8 +36,10 @@ const CARD_STYLES = {
 
 export default function TablesPage() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const role = useSelector((state) => state.auth.user?.role)
   const canManage = [ROLES.ADMIN, ROLES.MANAGER].includes(role)
+  const canCreateOrder = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER].includes(role)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -155,7 +158,24 @@ export default function TablesPage() {
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {tables.map((table) => (
-            <Card key={table._id} className={`border-2 ${CARD_STYLES[table.status] ?? ''}`}>
+            <Card
+              key={table._id}
+              className={`border-2 ${CARD_STYLES[table.status] ?? ''} ${
+                canCreateOrder ? 'cursor-pointer transition hover:shadow-md' : ''
+              }`}
+              onClick={
+                canCreateOrder ? () => navigate(`/waiter?table=${encodeURIComponent(table._id)}`) : undefined
+              }
+              role={canCreateOrder ? 'button' : undefined}
+              tabIndex={canCreateOrder ? 0 : undefined}
+              onKeyDown={(event) => {
+                if (canCreateOrder && (event.key === 'Enter' || event.key === ' ')) {
+                  event.preventDefault()
+                  navigate(`/waiter?table=${encodeURIComponent(table._id)}`)
+                }
+              }}
+              aria-label={canCreateOrder ? `Stol ${table.number} uchun buyurtma olish` : undefined}
+            >
               <div className="flex items-start justify-between">
                 <span className="text-2xl font-bold text-slate-900 dark:text-white">
                   {table.number}
@@ -173,7 +193,7 @@ export default function TablesPage() {
               )}
 
               {canManage && (
-                <div className="mt-3 space-y-2">
+                <div className="mt-3 space-y-2" onClick={(event) => event.stopPropagation()}>
                   <Select
                     value={table.status}
                     onChange={(e) => statusMutation.mutate({ id: table._id, status: e.target.value })}

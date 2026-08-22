@@ -1,8 +1,8 @@
 // Bronlar — ro'yxat, yaratish, tahrirlash, holat o'zgartirish va o'chirish.
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { CalendarDays, Pencil, Plus, Trash2 } from 'lucide-react'
+import { CalendarDays, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import {
@@ -11,13 +11,15 @@ import {
   getReservations,
   updateReservation,
 } from '../api'
-import { getTables } from '../../tables/api'
+import { getTables, updateTable } from '../../tables/api'
+import TableMap2D from '../../tables/components/TableMap2D'
 import { unwrapList, apiErrorMessage, formatDateTime } from '../../../lib/api'
 import {
   RESERVATION_STATUS,
   RESERVATION_STATUS_LABELS,
   RESERVATION_STATUS_TONE,
   ROLES,
+  TABLE_STATUS,
 } from '../../../constants/roles'
 import {
   Badge,
@@ -49,6 +51,8 @@ const formatLocalDatetime = (value) => {
   return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 16)
 }
 
+const today = () => new Date().toLocaleDateString('en-CA')
+
 export default function ReservationsPage() {
   const queryClient = useQueryClient()
   const role = useSelector((state) => state.auth.user?.role)
@@ -58,8 +62,10 @@ export default function ReservationsPage() {
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
 
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [startDate, setStartDate] = useState(today)
+  const [endDate, setEndDate] = useState(today)
+  const [confirming, setConfirming] = useState(null)
+  const [selectedTable, setSelectedTable] = useState(null)
 
   const reservationsQuery = useQuery({
     queryKey: ['reservations', startDate, endDate],
@@ -75,7 +81,7 @@ export default function ReservationsPage() {
   })
   const tablesQuery = useQuery({
     queryKey: ['tables'],
-    queryFn: async () => unwrapList(await getTables(), 'tables'),
+    queryFn: async () => unwrapList(await getTables({ page: 1, limit: 100 }), 'tables'),
   })
 
   const invalidate = () => {
@@ -93,7 +99,7 @@ export default function ReservationsPage() {
       if (editing) {
         return updateReservation(editing._id, {
           status: form.status,
-          date: form.date,
+          date: new Date(form.date).toISOString(),
           guests: Number(form.guests),
           notes: form.notes.trim(),
         })
@@ -102,7 +108,7 @@ export default function ReservationsPage() {
         customerName: form.customerName.trim(),
         customerPhone: form.customerPhone.trim(),
         table: form.table,
-        date: form.date,
+        date: new Date(form.date).toISOString(),
         guests: Number(form.guests),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       })
@@ -115,13 +121,38 @@ export default function ReservationsPage() {
     onError: (error) => toast.error(apiErrorMessage(error, 'Bronni saqlab bo\'lmadi')),
   })
 
-  const statusMutation = useMutation({
-    mutationFn: ({ id, status }) => updateReservation(id, { status }),
+  const confirmMutation = useMutation({
+    mutationFn: async ({ reservation, table }) => {
+      // The backend updates the reservation; the table is updated explicitly so
+      // the shared table map immediately reflects the confirmed booking.
+      await updateReservation(reservation._id, {
+        status: RESERVATION_STATUS.CONFIRMED,
+        table: table._id ?? table.id,
+      })
+      await updateTable(table._id ?? table.id, { status: TABLE_STATUS.RESERVED })
+    },
     onSuccess: () => {
-      toast.success('Holat yangilandi')
+      toast.success('Bron tasdiqlandi va stol bron qilingan holatiga o‘tdi')
+      setConfirming(null)
+      setSelectedTable(null)
       invalidate()
     },
-    onError: (error) => toast.error(apiErrorMessage(error, "Holat o'zgarmadi")),
+    onError: (error) => toast.error(apiErrorMessage(error, 'Bronni tasdiqlab bo‘lmadi')),
+  })
+
+  const cancelMutation = useMutation({
+    mutationFn: async (reservation) => {
+      await updateReservation(reservation._id, { status: RESERVATION_STATUS.CANCELLED })
+      const tableId = reservation.table?._id ?? reservation.table
+      if (reservation.status === RESERVATION_STATUS.CONFIRMED && tableId) {
+        await updateTable(tableId, { status: TABLE_STATUS.FREE })
+      }
+    },
+    onSuccess: () => {
+      toast.success('Bron bekor qilindi')
+      invalidate()
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, 'Bronni bekor qilib bo‘lmadi')),
   })
 
   const deleteMutation = useMutation({
@@ -165,10 +196,46 @@ export default function ReservationsPage() {
     form.customerName.trim() && form.customerPhone.trim() && form.table && form.date && form.guests > 0
 
   const reservations = reservationsQuery.data ?? []
+
+  // Build a map: tableId → confirmed reservation, so RESERVED tables can
+  // show the customer name and time on the 2D map.
+  const confirmedReservationByTable = useMemo(() => {
+    const map = new Map()
+    for (const r of reservations) {
+      if (r.status !== RESERVATION_STATUS.CONFIRMED) continue
+      const tableId = r.table?._id ?? r.table
+      if (tableId) map.set(tableId, r)
+    }
+    return map
+  }, [reservations])
+
   const tableOptions = (tablesQuery.data ?? []).map((t) => ({
     value: t._id,
     label: `Stol ${t.number} (${t.capacity} kishilik)`,
   }))
+  const selectableTables = (tablesQuery.data ?? []).map((table) => {
+    const tableId = table._id ?? table.id
+    const reservation = confirmedReservationByTable.get(tableId)
+    return {
+      ...table,
+      id: tableId,
+      // Enrich RESERVED tables with reservation data so TableMap2D
+      // can display customerName, date, time, guestCount.
+      ...(reservation
+        ? {
+            customerName: reservation.customerName,
+            date: reservation.date ? new Date(reservation.date).toLocaleDateString('uz-UZ') : undefined,
+            time: reservation.date ? new Date(reservation.date).toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }) : undefined,
+            guestCount: reservation.guests,
+          }
+        : {}),
+      // Reservation picker supports only a free table, plus the one already
+      // attached to this reservation (if it is being reconfirmed).
+      disabled:
+        table.status !== TABLE_STATUS.FREE &&
+        tableId !== (confirming?.table?._id ?? confirming?.table),
+    }
+  })
 
   return (
     <div>
@@ -254,18 +321,31 @@ export default function ReservationsPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <div className="w-40">
-                  <Select
-                    value={reservation.status}
-                    onChange={(e) =>
-                      statusMutation.mutate({ id: reservation._id, status: e.target.value })
-                    }
-                    options={Object.values(RESERVATION_STATUS).map((s) => ({
-                      value: s,
-                      label: RESERVATION_STATUS_LABELS[s],
-                    }))}
-                  />
-                </div>
+                {reservation.status === RESERVATION_STATUS.PENDING && (
+                  <Button
+                    onClick={() => {
+                      setConfirming(reservation)
+                      setSelectedTable(reservation.table ?? null)
+                    }}
+                    title="Tasdiqlash va stol tanlash"
+                  >
+                    <Check className="mr-1 h-4 w-4" /> Tasdiqlash
+                  </Button>
+                )}
+                {[RESERVATION_STATUS.PENDING, RESERVATION_STATUS.CONFIRMED].includes(reservation.status) && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      if (window.confirm(`"${reservation.customerName}" bronini bekor qilasizmi?`)) {
+                        cancelMutation.mutate(reservation)
+                      }
+                    }}
+                    disabled={cancelMutation.isPending}
+                    title="Bronni bekor qilish"
+                  >
+                    <X className="mr-1 h-4 w-4" /> Bekor qilish
+                  </Button>
+                )}
                 <Button variant="ghost" onClick={() => openEdit(reservation)} title="Tahrirlash">
                   <Pencil className="h-4 w-4" />
                 </Button>
@@ -287,6 +367,58 @@ export default function ReservationsPage() {
           ))}
         </div>
       )}
+
+      <Modal
+        isOpen={Boolean(confirming)}
+        onClose={() => {
+          if (!confirmMutation.isPending) {
+            setConfirming(null)
+            setSelectedTable(null)
+          }
+        }}
+        title={confirming ? `${confirming.customerName} bronini tasdiqlash` : 'Bronni tasdiqlash'}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              disabled={confirmMutation.isPending}
+              onClick={() => {
+                setConfirming(null)
+                setSelectedTable(null)
+              }}
+            >
+              Bekor qilish
+            </Button>
+            <Button
+              disabled={!selectedTable || confirmMutation.isPending}
+              isLoading={confirmMutation.isPending}
+              onClick={() => confirmMutation.mutate({ reservation: confirming, table: selectedTable })}
+            >
+              Saqlash
+            </Button>
+          </>
+        }
+      >
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+          Bo‘sh stolni xaritadan tanlang. Sariq stollar avvaldan bron qilingan, qizil stollar band.
+        </p>
+        {tablesQuery.isLoading ? (
+          <Skeleton className="h-64 w-full" />
+        ) : (
+          <TableMap2D
+            pickerMode
+            tables={selectableTables}
+            selectedTable={selectedTable}
+            onTableClick={(table) => {
+              if (table.disabled) {
+                toast.info('Faqat bo‘sh stolni tanlash mumkin')
+                return
+              }
+              setSelectedTable(table)
+            }}
+          />
+        )}
+      </Modal>
 
       <Modal
         isOpen={modalOpen}
@@ -351,17 +483,6 @@ export default function ReservationsPage() {
             value={form.guests}
             onChange={setField('guests')}
           />
-          {editing && (
-            <Select
-              label="Holat"
-              value={form.status}
-              onChange={setField('status')}
-              options={Object.values(RESERVATION_STATUS).map((s) => ({
-                value: s,
-                label: RESERVATION_STATUS_LABELS[s],
-              }))}
-            />
-          )}
           <Input
             label="Izoh (ixtiyoriy)"
             value={form.notes}

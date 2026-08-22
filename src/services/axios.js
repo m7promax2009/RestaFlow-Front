@@ -3,7 +3,9 @@
 import axios from 'axios'
 import { disconnectSocket } from './socket'
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+// Dev'da Vite proxy'si orqali same-origin ketadi (CORS muammosi bo'lmaydi),
+// prod'da esa to'g'ridan-to'g'ri backend origin'iga uriladi.
+const baseURL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? '/api' : 'https://backend-production-109c0.up.railway.app/api')
 
 const api = axios.create({
   baseURL,
