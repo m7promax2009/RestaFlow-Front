@@ -7,7 +7,7 @@ const URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? window.loc
 
 export const socket = io(URL, {
   autoConnect: false,
-  transports: ['websocket'],
+  transports: ['websocket', 'polling'],
 })
 
 // Eventlar (backend bilan kelishilgan):

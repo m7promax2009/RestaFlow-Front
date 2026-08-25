@@ -12,11 +12,13 @@ import { ROLE_LABELS } from '../constants/roles'
 import { useNotificationsSocket } from '../features/notifications'
 import { useAuthSync } from '../hooks/useAuthSync'
 import { disconnectSocket } from '../services/socket'
+import { useSocketStatus } from '../hooks/useSocketStatus'
 
 export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
+  const isSocketConnected = useSocketStatus()
 
   const user = useSelector((state) => state.auth.user)
   const notifications = useSelector((state) => state.notifications.items)
@@ -150,6 +152,12 @@ export default function AppLayout() {
               className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
               aria-label="Bildirishnomalar"
             >
+              <span
+                title={isSocketConnected ? "Ulangan" : "Ulanish yo'q"}
+                className={`absolute -left-0.5 -top-0.5 inline-block h-2 w-2 rounded-full ${
+                  isSocketConnected ? 'bg-emerald-500' : 'bg-rose-500'
+                }`}
+              />
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
                 <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />

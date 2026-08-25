@@ -48,7 +48,7 @@ function getSettingsPayload(value) {
     restaurantName: payload.restaurantName ?? payload.name ?? '',
     logoUrl: payload.logoUrl ?? payload.logo ?? '',
     serviceFee: payload.serviceFee ?? payload.service_fee ?? 0,
-    tax: payload.tax ?? payload.taxPercent ?? payload.tax_percent ?? 12,
+  tax: payload.taxRate ?? payload.tax ?? payload.taxPercent ?? payload.tax_percent ?? 12,
     currency: payload.currency ?? 'UZS',
     printers: Array.isArray(payload.printers) && payload.printers.length
       ? payload.printers.map((printer) => ({
@@ -131,7 +131,7 @@ export default function SettingsPage() {
   const onSubmit = async (values) => {
     setSaveState('saving')
     try {
-      const saved = await settingsApi.update(values)
+      const saved = await settingsApi.update({ ...values, taxRate: values.tax })
       const normalized = getSettingsPayload(saved)
       reset({ ...normalized, logoFile: null })
       setLogoPreview(normalized.logoUrl || logoPreview)
