@@ -1,9 +1,9 @@
 // Buyurtma "cheki" — real oshxona ticketiga o'xshab teshiklangan yuqori qirra bilan.
 // Vaqt o'tishi bilan rang leaf → amber → cherry ga o'zgaradi (shoshilinchlik signali).
-// Mas'ul: Ziyodulla.
+// Mas'ul: Ziyodulla & Team.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, CheckCircle2, MessageSquare, StickyNote } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, CheckCircle2, MessageSquare, StickyNote } from 'lucide-react'
 import { ORDER_STATUS } from '../../../constants/roles'
 
 function useElapsedMinutes(createdAt) {
@@ -31,9 +31,30 @@ function urgencyClasses(minutes, status) {
 export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
   const { t } = useTranslation()
   const minutes = useElapsedMinutes(order.createdAt)
+  const [checkedItems, setCheckedItems] = useState(new Set())
+
+  const isDelayed = minutes >= 15 && order.status === ORDER_STATUS.NEW
+
+  const toggleCheckItem = (index) => {
+    setCheckedItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
+  }
 
   return (
-    <li className="relative rounded-xl border border-black/10 bg-white shadow-sm dark:border-ink-border dark:bg-ink-3">
+    <li
+      className={`relative rounded-xl border bg-white shadow-sm transition-all dark:bg-ink-3 ${
+        isDelayed
+          ? 'border-rose-500 ring-2 ring-rose-400/30 dark:border-rose-500 dark:ring-rose-500/30'
+          : 'border-black/10 dark:border-ink-border'
+      }`}
+    >
       {/* Perforatsiyalangan yuqori qirra — signature element */}
       <div
         aria-hidden="true"
@@ -48,6 +69,19 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
       />
 
       <div className="px-4 pb-4 pt-1">
+        {/* Kechikayotgan buyurtma yorlig'i (Urgency Alert) */}
+        {isDelayed && (
+          <div className="mb-2 flex items-center justify-between rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-600 border border-rose-500/30 dark:bg-rose-500/20 dark:text-rose-400 animate-pulse">
+            <span className="flex items-center gap-1.5">
+              <AlertTriangle size={14} className="shrink-0" />
+              <span>Kechikmoqda!</span>
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider opacity-80">
+              15+ daqiqa
+            </span>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="font-mono text-xs text-slate">
@@ -68,17 +102,33 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
           </span>
         </div>
 
+        {/* Taomlar ro'yxati (Item Check-off) */}
         <ul className="mt-3 space-y-2 border-t border-dashed border-black/10 pt-3 text-sm dark:border-ink-border">
           {order.items?.map((item, index) => {
+            const isChecked = checkedItems.has(index)
             const itemNote = item.note || item.comment || item.notes
             return (
-              <li key={`${item.product}-${index}`} className="flex flex-col gap-0.5 text-charcoal dark:text-fog">
+              <li
+                key={`${item.product}-${index}`}
+                onClick={() => toggleCheckItem(index)}
+                className="group flex flex-col gap-0.5 text-charcoal dark:text-fog cursor-pointer select-none rounded-lg p-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                title="Bajarilganini belgilash uchun bosing"
+              >
                 <div className="flex items-baseline justify-between gap-2 font-medium">
-                  <span>{item.product}</span>
-                  <span className="font-mono text-slate shrink-0">×{item.quantity}</span>
+                  <span className={`flex items-center gap-1.5 transition-all ${isChecked ? 'line-through opacity-50' : ''}`}>
+                    {isChecked && <Check size={14} className="text-emerald-500 shrink-0 stroke-[3]" />}
+                    <span>{item.product}</span>
+                  </span>
+                  <span className={`font-mono text-slate shrink-0 transition-opacity ${isChecked ? 'opacity-50' : ''}`}>
+                    ×{item.quantity}
+                  </span>
                 </div>
                 {itemNote && (
-                  <p className="mt-0.5 flex items-start gap-1.5 rounded bg-amber-500/10 px-2 py-1 text-xs font-normal text-amber-700 dark:text-amber-300">
+                  <p
+                    className={`mt-0.5 flex items-start gap-1.5 rounded bg-amber-500/10 px-2 py-1 text-xs font-normal text-amber-700 dark:text-amber-300 transition-opacity ${
+                      isChecked ? 'opacity-40 line-through' : ''
+                    }`}
+                  >
                     <MessageSquare size={12} className="mt-0.5 shrink-0 opacity-80" />
                     <span>{itemNote}</span>
                   </p>
