@@ -9,21 +9,13 @@ import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
 import { saveSession } from '../session'
 import { ROLE_HOME } from '../../../constants/roles'
-import { rolesForPath } from '../../../constants/navigation'
+import { resolveRedirect } from '../../../constants/navigation'
 import { connectSocket } from '../../../services/socket'
 
 const schema = z.object({
   email: z.string().email("Email noto'g'ri formatda"),
   password: z.string().min(6, "Kamida 6 ta belgi bo'lishi kerak"),
 })
-
-function resolveRedirect(from, role) {
-  if (from) {
-    const allowed = rolesForPath(from)
-    if (allowed.length === 0 || allowed.includes(role)) return from
-  }
-  return ROLE_HOME[role] ?? '/'
-}
 
 /* SVG Icons */
 const ShieldIcon = () => (
@@ -102,7 +94,7 @@ export default function LoginPage() {
       saveSession(data)
       dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
       connectSocket(data.accessToken)
-      navigate(resolveRedirect(location.state?.from?.pathname, data.user?.role), { replace: true })
+      navigate(resolveRedirect(location.state?.from, data.user?.role), { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
     }

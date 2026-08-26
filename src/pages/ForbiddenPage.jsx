@@ -4,10 +4,11 @@ import { useSelector } from 'react-redux'
 import { ShieldAlert } from 'lucide-react'
 
 import { ROLE_HOME, ROLE_LABELS } from '../constants/roles'
+import { readUser } from '../features/auth/session'
 
 export default function ForbiddenPage() {
-  const user = useSelector((state) => state.auth.user)
-  const home = ROLE_HOME[user?.role] ?? '/'
+  const user = useSelector((state) => state.auth.user) || readUser()
+  const home = (user?.role && ROLE_HOME[user.role]) ? ROLE_HOME[user.role] : '/'
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">

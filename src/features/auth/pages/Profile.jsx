@@ -36,7 +36,7 @@ export default function ProfilePage() {
       disconnectSocket()
       clearSession()
       dispatch(clearCredentials())
-      navigate('/login', { replace: true })
+      navigate('/login', { replace: true, state: null })
     },
     onError: (error) => toast.error(apiErrorMessage(error, "Parolni o'zgartirib bo'lmadi")),
   })
@@ -45,7 +45,7 @@ export default function ProfilePage() {
     disconnectSocket()
     clearSession()
     dispatch(clearCredentials())
-    navigate('/login', { replace: true })
+    navigate('/login', { replace: true, state: null })
   }
 
   const passwordsMatch = newPassword.length >= 6 && newPassword === confirmPassword

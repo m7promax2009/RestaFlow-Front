@@ -57,8 +57,8 @@ export function useKitchenOrders() {
   const ordersQuery = useQuery({
     queryKey: ['orders', 'kitchen'],
     queryFn: async () => unwrapList(await getOrders({ limit: 100 }), 'orders'),
-    // Socket vaqtincha uzilib qolsa ham ekran eskirmasin.
-    refetchInterval: 20_000,
+    // Real-time yangilanish Socket orqali keladi, polling faqat favqulodda zaxira (2 daqiqa).
+    refetchInterval: 120_000,
   })
 
   const invalidateOrders = useCallback(

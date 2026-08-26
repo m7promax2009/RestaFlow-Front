@@ -55,8 +55,8 @@ export default function PrivateRoute() {
 
   if (!token) {
     clearSession()
-    // Login'dan keyin foydalanuvchini kelgan sahifasiga qaytarish uchun saqlaymiz.
-    return <Navigate to="/login" state={{ from: location }} replace />
+    const isErrorOrAuth = location.pathname === '/403' || location.pathname.startsWith('/login')
+    return <Navigate to="/login" state={isErrorOrAuth ? null : { from: location }} replace />
   }
 
   if (needsBootstrap && (isLoading || (!data && !isError))) {
@@ -64,7 +64,8 @@ export default function PrivateRoute() {
   }
 
   if (isError) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    const isErrorOrAuth = location.pathname === '/403' || location.pathname.startsWith('/login')
+    return <Navigate to="/login" state={isErrorOrAuth ? null : { from: location }} replace />
   }
 
   return <Outlet />
