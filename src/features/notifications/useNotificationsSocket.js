@@ -10,6 +10,7 @@ import { getTables } from './api'
 import { addNotification, fetchNotifications } from './notificationsSlice'
 import { toast } from '../../components/ui'
 import { ROLES, ORDER_STATUS } from '../../constants/roles'
+import { playNotificationSound } from '../../utils/sound'
 
 // TASDIQLANMAGAN TAXMIN: Table modelida ofitsiantga biriktirish maydoni bor deb
 // taxmin qilinmoqda ("waiter" yoki "assignedWaiter"). Backend kodida bu maydon
@@ -68,6 +69,7 @@ export default function useNotificationsSocket() {
         }
 
         const handleOrderEvent = () => {
+            playNotificationSound()
             invalidateTablesAndOrders()
         }
 
@@ -97,6 +99,7 @@ export default function useNotificationsSocket() {
                 createdAt: new Date().toISOString(),
             }
 
+            playNotificationSound()
             dispatch(addNotification(notification))
             toast.success(notification.message)
         }
@@ -113,6 +116,7 @@ export default function useNotificationsSocket() {
                 read: false,
                 createdAt: payload.createdAt ?? new Date().toISOString(),
             }
+            playNotificationSound()
             dispatch(addNotification(notification))
             if (notification.message) {
                 toast.success(notification.message)

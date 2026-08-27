@@ -1,9 +1,7 @@
 // Oshxona ekrani (KDS) — Kutilmoqda / Tayyorlanmoqda / Tayyor ustunlari.
-// Oshpaz "Tayyorlashni boshlash" / "Tayyor" tugmalari orqali holatni suradi.
-// Yangi buyurtma kelganda ovozli signal (chime + ovozli xabar) beriladi — sound
-// toggle holati localStorage'da saqlanadi. Mock rejim yo'q — backend to'liq ulangan.
+// Premium Orange brend dizayn sistemasi.
 import { useTranslation } from 'react-i18next'
-import { RefreshCw, Volume2, VolumeX } from 'lucide-react'
+import { RefreshCw, UtensilsCrossed, Volume2, VolumeX } from 'lucide-react'
 
 import { ORDER_STATUS } from '../../../constants/roles'
 import { Button, Card, PageHeader } from '../../../components/ui'
@@ -34,9 +32,18 @@ export default function KitchenPage() {
   const onMarkReady = (id) => setStatus(id, ORDER_STATUS.READY, 'complete')
 
   return (
-    <div>
+    <div className="min-h-full rounded-3xl bg-[#FFFDF9] p-4 sm:p-6 dark:bg-[#111827] transition-colors">
       <PageHeader
-        title={t('kitchen.title')}
+        title={
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97316] to-[#EA580C] text-white shadow-lg shadow-orange-500/25">
+              <UtensilsCrossed size={20} />
+            </div>
+            <span className="font-display text-2xl font-bold bg-gradient-to-r from-[#111827] via-[#F97316] to-[#EA580C] bg-clip-text text-transparent dark:from-white dark:via-orange-400 dark:to-amber-400">
+              {t('kitchen.title')}
+            </span>
+          </div>
+        }
         subtitle={t('kitchen.subtitle')}
         actions={
           <div className="flex flex-wrap items-center gap-2">

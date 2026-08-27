@@ -1,4 +1,4 @@
-// Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
+// Ilova qobig'i вЂ” sidebar (rolga qarab filtrlangan), topbar va kontent.
 // Menyu bandlari constants/navigation.js dan olinadi (marshrutlar bilan bir manba).
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'

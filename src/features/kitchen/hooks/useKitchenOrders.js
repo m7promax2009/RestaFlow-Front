@@ -101,20 +101,24 @@ export function useKitchenOrders() {
       invalidateOrders()
     }
 
+    socket.on('order:new', handleNewOrder)
     socket.on('order:created', handleNewOrder)
     socket.on('kitchen:new_order', handleNewOrder)
     socket.on('order:status_updated', handleStatusUpdate)
     socket.on('order:status_changed', handleStatusUpdate)
+    socket.on('order:statusChanged', handleStatusUpdate)
     socket.on('table:status_updated', handleTableUpdate)
     socket.on('order:item_updated', handleItemUpdate)
     socket.on('order:itemUpdated', handleItemUpdate)
     socket.on('order:itemStatusChanged', handleItemUpdate)
 
     return () => {
+      socket.off('order:new', handleNewOrder)
       socket.off('order:created', handleNewOrder)
       socket.off('kitchen:new_order', handleNewOrder)
       socket.off('order:status_updated', handleStatusUpdate)
       socket.off('order:status_changed', handleStatusUpdate)
+      socket.off('order:statusChanged', handleStatusUpdate)
       socket.off('table:status_updated', handleTableUpdate)
       socket.off('order:item_updated', handleItemUpdate)
       socket.off('order:itemUpdated', handleItemUpdate)
@@ -239,4 +243,3 @@ export function useKitchenOrders() {
     testSound,
   }
 }
-
