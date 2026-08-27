@@ -1,9 +1,9 @@
 // Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
-// Premium Orange brend dizayn sistemasi.
+// Premium Orange brend dizayn sistemasi + Mavzu (Light / Dark) almashtirgich.
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Bell, LogOut, Menu, User, X, UtensilsCrossed } from 'lucide-react'
+import { Bell, LogOut, Menu, User, X, UtensilsCrossed, Sun, Moon } from 'lucide-react'
 
 import { clearCredentials } from '../features/auth/authSlice'
 import { clearSession } from '../features/auth/session'
@@ -12,6 +12,7 @@ import { ROLE_LABELS } from '../constants/roles'
 import { useNotificationsSocket } from '../features/notifications'
 import { useAuthSync } from '../hooks/useAuthSync'
 import { useSocketStatus } from '../hooks/useSocketStatus'
+import { useTheme } from '../hooks/useTheme'
 import { disconnectSocket } from '../services/socket'
 
 export default function AppLayout() {
@@ -19,6 +20,7 @@ export default function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const isSocketConnected = useSocketStatus()
+  const { theme, toggleTheme } = useTheme()
 
   const user = useSelector((state) => state.auth.user)
   const notifications = useSelector((state) => state.notifications.items)
@@ -120,7 +122,7 @@ export default function AppLayout() {
   )
 
   return (
-    <div className="flex min-h-screen bg-[#FFFDF9] dark:bg-[#0B0F17] transition-colors">
+    <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F17] transition-colors">
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">{sidebar}</aside>
 
@@ -153,6 +155,21 @@ export default function AppLayout() {
           </span>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Mavzu (Light / Dark) almashtirish tugmasi */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"
+              title={theme === 'dark' ? "Yorqin (oq) rejimga o'tish" : "Tungi (qorong'u) rejimga o'tish"}
+              aria-label="Mavzuni almashtirish"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-amber-400" />
+              ) : (
+                <Moon className="h-5 w-5 text-slate-700" />
+              )}
+            </button>
+
             <NavLink
               to="/notifications"
               className="relative rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"
