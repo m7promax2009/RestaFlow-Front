@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { CalendarDays, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { AlertTriangle, CalendarDays, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import {
@@ -140,6 +140,8 @@ export default function ReservationsPage() {
     onError: (error) => toast.error(apiErrorMessage(error, 'Bronni tasdiqlab bo‘lmadi')),
   })
 
+  const [confirmAction, setConfirmAction] = useState(null) // { type: 'cancel'|'delete', reservation }
+
   const cancelMutation = useMutation({
     mutationFn: async (reservation) => {
       await updateReservation(reservation._id, { status: RESERVATION_STATUS.CANCELLED })
@@ -147,6 +149,13 @@ export default function ReservationsPage() {
       if (reservation.status === RESERVATION_STATUS.CONFIRMED && tableId) {
         await updateTable(tableId, { status: TABLE_STATUS.FREE })
       }
+    },
+    onMutate: async (reservation) => {
+      setConfirmAction(null)
+      queryClient.setQueryData(['reservations', startDate, endDate], (old) => {
+        if (!Array.isArray(old)) return old
+        return old.map((r) => (r._id === reservation._id ? { ...r, status: RESERVATION_STATUS.CANCELLED } : r))
+      })
     },
     onSuccess: () => {
       toast.success('Bron bekor qilindi')
@@ -157,6 +166,13 @@ export default function ReservationsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteReservation(id),
+    onMutate: async (id) => {
+      setConfirmAction(null)
+      queryClient.setQueryData(['reservations', startDate, endDate], (old) => {
+        if (!Array.isArray(old)) return old
+        return old.filter((r) => r._id !== id)
+      })
+    },
     onSuccess: () => {
       toast.success("Bron o'chirildi")
       invalidate()
@@ -335,11 +351,7 @@ export default function ReservationsPage() {
                 {[RESERVATION_STATUS.PENDING, RESERVATION_STATUS.CONFIRMED].includes(reservation.status) && (
                   <Button
                     variant="secondary"
-                    onClick={() => {
-                      if (window.confirm(`"${reservation.customerName}" bronini bekor qilasizmi?`)) {
-                        cancelMutation.mutate(reservation)
-                      }
-                    }}
+                    onClick={() => setConfirmAction({ type: 'cancel', reservation })}
                     disabled={cancelMutation.isPending}
                     title="Bronni bekor qilish"
                   >
@@ -353,11 +365,7 @@ export default function ReservationsPage() {
                   <Button
                     variant="ghost"
                     title="O'chirish"
-                    onClick={() => {
-                      if (window.confirm(`"${reservation.customerName}" bronini o'chirasizmi?`)) {
-                        deleteMutation.mutate(reservation._id)
-                      }
-                    }}
+                    onClick={() => setConfirmAction({ type: 'delete', reservation })}
                   >
                     <Trash2 className="h-4 w-4 text-rose-500" />
                   </Button>
@@ -489,6 +497,43 @@ export default function ReservationsPage() {
             onChange={setField('notes')}
             placeholder="Deraza yonidagi stol"
           />
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(confirmAction)}
+        onClose={() => setConfirmAction(null)}
+        title="Tasdiqlang"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setConfirmAction(null)}>
+              Bekor qilish
+            </Button>
+            <Button
+              variant="danger"
+              isLoading={cancelMutation.isPending || deleteMutation.isPending}
+              onClick={() => {
+                if (confirmAction?.type === 'cancel') {
+                  cancelMutation.mutate(confirmAction.reservation)
+                } else if (confirmAction?.type === 'delete') {
+                  deleteMutation.mutate(confirmAction.reservation._id)
+                }
+              }}
+            >
+              Tasdiqlash
+            </Button>
+          </>
+        }
+      >
+        <div className="flex items-center gap-3 py-2">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            {confirmAction?.type === 'cancel'
+              ? `"${confirmAction?.reservation?.customerName}" bronini bekor qilmoqchimisiz?`
+              : `"${confirmAction?.reservation?.customerName}" bronini rostdan ham o'chirib tashlamoqchimisiz?`}
+          </p>
         </div>
       </Modal>
     </div>

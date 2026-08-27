@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Grid3X3, Pencil, Plus, Trash2, Users } from 'lucide-react'
+import { AlertTriangle, Grid3X3, Pencil, Plus, Trash2, Users } from 'lucide-react'
 import { toast } from 'react-toastify'
 
 import { createTable, deleteTable, getTables, updateTable } from '../api'
@@ -44,6 +44,7 @@ export default function TablesPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
 
   // Stol taxtasi barcha stollarni birdaniga ko'rsatadi (paginatsiz UI),
   // shu sabab limit'ni katta qilib yuboramiz — GET /api/tables?page=1&limit=100
@@ -80,6 +81,13 @@ export default function TablesPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteTable(id),
+    onMutate: async (id) => {
+      setDeleteConfirm(null)
+      queryClient.setQueryData(['tables'], (old) => {
+        if (!Array.isArray(old)) return old
+        return old.filter((t) => t._id !== id)
+      })
+    },
     onSuccess: () => {
       toast.success("Stol o'chirildi")
       invalidate()
@@ -209,11 +217,7 @@ export default function TablesPage() {
                     <Button
                       variant="ghost"
                       className="flex-1"
-                      onClick={() => {
-                        if (window.confirm(`Stol ${table.number} ni o'chirasizmi?`)) {
-                          deleteMutation.mutate(table._id)
-                        }
-                      }}
+                      onClick={() => setDeleteConfirm(table)}
                     >
                       <Trash2 className="h-3.5 w-3.5 text-rose-500" />
                     </Button>
@@ -276,6 +280,35 @@ export default function TablesPage() {
               }))}
             />
           )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={Boolean(deleteConfirm)}
+        onClose={() => setDeleteConfirm(null)}
+        title="Tasdiqlang"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>
+              Bekor qilish
+            </Button>
+            <Button
+              variant="danger"
+              isLoading={deleteMutation.isPending}
+              onClick={() => deleteMutation.mutate(deleteConfirm._id)}
+            >
+              O'chirish
+            </Button>
+          </>
+        }
+      >
+        <div className="flex items-center gap-3 py-2">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-950 dark:text-rose-400">
+            <AlertTriangle className="h-5 w-5" />
+          </div>
+          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            Stol {deleteConfirm?.number} ni rostdan ham o'chirib tashlamoqchimisiz?
+          </p>
         </div>
       </Modal>
     </div>
