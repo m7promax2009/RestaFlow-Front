@@ -99,11 +99,6 @@ export const TABLE_STATUS_LABELS = {
   [TABLE_STATUS.BUSY]: 'Band',
   [TABLE_STATUS.RESERVED]: 'Bron qilingan',
   [TABLE_STATUS.CLEANING]: 'Tozalanmoqda',
-  free: "Bo'sh",
-  available: "Bo'sh",
-  occupied: 'Band',
-  reserved: 'Bron qilingan',
-  cleaning: 'Tozalanmoqda',
 }
 
 export const TABLE_STATUS_TONE = {
@@ -111,11 +106,6 @@ export const TABLE_STATUS_TONE = {
   [TABLE_STATUS.BUSY]: 'danger',
   [TABLE_STATUS.RESERVED]: 'warning',
   [TABLE_STATUS.CLEANING]: 'neutral',
-  free: 'success',
-  available: 'success',
-  occupied: 'danger',
-  reserved: 'warning',
-  cleaning: 'neutral',
 }
 
 export const TABLE_STATUS_COLORS = {
@@ -123,14 +113,9 @@ export const TABLE_STATUS_COLORS = {
   [TABLE_STATUS.BUSY]: '#EF4444',
   [TABLE_STATUS.RESERVED]: '#F59E0B',
   [TABLE_STATUS.CLEANING]: '#94A3B8',
-  free: '#22C55E',
-  available: '#22C55E',
-  occupied: '#EF4444',
-  reserved: '#F59E0B',
-  cleaning: '#94A3B8',
 }
 
-export const TRANSFERABLE_TARGET_STATUSES = [TABLE_STATUS.AVAILABLE, 'free', 'available']
+export const TRANSFERABLE_TARGET_STATUSES = [TABLE_STATUS.AVAILABLE]
 
 
 // ─── To'lov usuli ───────────────────────────────────────────────────────────
