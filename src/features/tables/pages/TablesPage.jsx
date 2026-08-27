@@ -28,9 +28,9 @@ import {
 const EMPTY_FORM = { number: '', capacity: 4, location: '', status: TABLE_STATUS.FREE }
 
 const CARD_STYLES = {
-  [TABLE_STATUS.FREE]: 'border-emerald-300 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/40',
-  [TABLE_STATUS.BUSY]: 'border-rose-300 bg-rose-50 dark:border-rose-800 dark:bg-rose-950/40',
-  [TABLE_STATUS.RESERVED]: 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40',
+  [TABLE_STATUS.FREE]: 'border-emerald-500/30 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/30',
+  [TABLE_STATUS.BUSY]: 'border-orange-500/30 bg-orange-50/50 dark:border-orange-800 dark:bg-orange-950/30',
+  [TABLE_STATUS.RESERVED]: 'border-amber-500/30 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/30',
 }
 
 export default function TablesPage() {
