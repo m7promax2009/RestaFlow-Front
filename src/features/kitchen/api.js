@@ -32,10 +32,10 @@ export function normalizeKitchenOrder(o) {
 }
 
 export async function fetchKitchenOrders() {
-  const statusFilter = [ORDER_STATUS.NEW, ORDER_STATUS.IN_KITCHEN, ORDER_STATUS.READY].join(',')
-  const res = await api.get('/orders', { params: { status: statusFilter, limit: 100 } })
+  const res = await api.get('/orders', { params: { limit: 100 } })
   const orders = res.data?.data?.orders ?? res.data?.orders ?? res.data?.data ?? []
-  return orders.map(normalizeKitchenOrder).filter(Boolean)
+  const kitchenStatuses = [ORDER_STATUS.NEW, ORDER_STATUS.IN_KITCHEN, ORDER_STATUS.READY]
+  return orders.map(normalizeKitchenOrder).filter((o) => o && kitchenStatuses.includes(o.status))
 }
 
 // Backend kontrakti: PATCH /orders/{id}/status  body: { "status": "yangi" }
