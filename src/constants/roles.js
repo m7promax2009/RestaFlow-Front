@@ -86,12 +86,13 @@ export const NEXT_ORDER_STATUS = {
 // Backend Table.STATUSES = ['available', 'occupied', 'reserved']
 export const TABLE_STATUS = {
   AVAILABLE: 'available',
-  FREE: 'available',
   BUSY: 'occupied',
-  OCCUPIED: 'occupied',
   RESERVED: 'reserved',
   CLEANING: 'cleaning',
 }
+// Aliases for legacy component compatibility
+TABLE_STATUS.FREE = TABLE_STATUS.AVAILABLE
+TABLE_STATUS.OCCUPIED = TABLE_STATUS.BUSY
 
 export const TABLE_STATUS_LABELS = {
   [TABLE_STATUS.AVAILABLE]: "Bo'sh",
