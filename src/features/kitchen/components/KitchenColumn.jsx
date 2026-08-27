@@ -11,18 +11,38 @@ const DOT_COLOR = {
   complete: 'bg-emerald-500',
 }
 
-export default function KitchenColumn({ id, orders, isLoading, onStartPreparing, onMarkReady }) {
+export default function KitchenColumn({
+  id,
+  orders,
+  isLoading,
+  onStartPreparing,
+  onMarkReady,
+  onToggleItemReady,
+}) {
   const { t } = useTranslation()
+
+  const totalOrders = orders.length
+  const totalDishes = orders.reduce(
+    (sum, order) =>
+      sum +
+      (order.items?.reduce(
+        (itemSum, item) => itemSum + (Number(item.quantity) || 1),
+        0,
+      ) || 0),
+    0,
+  )
 
   return (
     <div className="flex w-[85vw] shrink-0 flex-col rounded-2xl bg-slate-50/70 p-3 dark:bg-slate-900/40 sm:w-full sm:min-w-0">
-      <div className="mb-3 flex items-center gap-2 px-1">
-        <span className={`size-2.5 rounded-full ${DOT_COLOR[id]}`} />
-        <h3 className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-200">
-          {t(`kitchen.columns.${id}`)}
-        </h3>
-        <span className="ml-auto rounded-full bg-slate-200 px-2 py-0.5 font-mono text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-          {orders.length}
+      <div className="mb-3 flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2">
+          <span className={`size-2.5 rounded-full ${DOT_COLOR[id]}`} />
+          <h3 className="text-sm font-bold tracking-wide text-slate-700 dark:text-slate-200">
+            {t(`kitchen.columns.${id}`)}
+          </h3>
+        </div>
+        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 font-mono text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300 shrink-0">
+          {totalOrders} ta buyurtma · {totalDishes} ta taom
         </span>
       </div>
 
@@ -43,6 +63,7 @@ export default function KitchenColumn({ id, orders, isLoading, onStartPreparing,
               order={order}
               onStartPreparing={onStartPreparing}
               onMarkReady={onMarkReady}
+              onToggleItemReady={onToggleItemReady}
             />
           ))}
         </ul>

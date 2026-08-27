@@ -24,6 +24,7 @@ export default function KitchenPage() {
     error,
     refetch,
     setStatus,
+    toggleItemReady,
     soundEnabled,
     toggleSound,
     testSound,
@@ -80,6 +81,7 @@ export default function KitchenPage() {
             isLoading={isLoading}
             onStartPreparing={onStartPreparing}
             onMarkReady={onMarkReady}
+            onToggleItemReady={toggleItemReady}
           />
         ))}
       </div>

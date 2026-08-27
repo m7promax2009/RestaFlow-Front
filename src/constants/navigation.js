@@ -132,5 +132,40 @@ export function navItemsForRole(role) {
 
 /** Marshrutni himoyalash uchun — shu yo'lga ruxsat etilgan rollar. */
 export function rolesForPath(path) {
-  return NAV_ITEMS.find((item) => item.path === path)?.roles ?? []
+  if (!path) return []
+  const cleanPath = path.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/'
+  return NAV_ITEMS.find((item) => item.path === cleanPath)?.roles ?? []
 }
+
+/**
+ * Login yoki PublicRoute'dan keyin xavfsiz yo'naltirish manzilini aniqlaydi.
+ *
+ * @param {string | { pathname?: string, search?: string, hash?: string }} from
+ * @param {string} role
+ * @returns {string}
+ */
+export function resolveRedirect(from, role) {
+  const pathname = typeof from === 'string' ? from.split('?')[0].split('#')[0] : from?.pathname
+
+  if (
+    !pathname ||
+    pathname === '/' ||
+    pathname === '/403' ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/register') ||
+    pathname.startsWith('/otp') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/reset-password')
+  ) {
+    return (role && ROLE_HOME[role]) ? ROLE_HOME[role] : '/'
+  }
+
+  const allowed = rolesForPath(pathname)
+  if (allowed.length > 0 && role && allowed.includes(role)) {
+    if (typeof from === 'string') return from
+    return `${from.pathname || ''}${from.search || ''}${from.hash || ''}`
+  }
+
+  return (role && ROLE_HOME[role]) ? ROLE_HOME[role] : '/'
+}
+

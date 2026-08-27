@@ -76,7 +76,11 @@ export default function WaiterPage() {
     mutationFn: () =>
       createOrder({
         table: tableId,
-        items: cart.map(({ product, quantity }) => ({ product, quantity })),
+        items: cart.map(({ product, quantity, note }) => ({
+          product,
+          quantity,
+          ...(note && note.trim() ? { note: note.trim().slice(0, 200) } : {}),
+        })),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       }),
     onSuccess: () => {
@@ -130,7 +134,7 @@ export default function WaiterPage() {
           i.product === product._id ? { ...i, quantity: i.quantity + 1 } : i,
         )
       }
-      return [...prev, { product: product._id, name: product.name, price: product.price, quantity: 1 }]
+      return [...prev, { product: product._id, name: product.name, price: product.price, quantity: 1, note: '' }]
     })
   }
 
@@ -139,6 +143,12 @@ export default function WaiterPage() {
       prev
         .map((i) => (i.product === productId ? { ...i, quantity: i.quantity + delta } : i))
         .filter((i) => i.quantity > 0),
+    )
+  }
+
+  const updateItemNote = (productId, note) => {
+    setCart((prev) =>
+      prev.map((i) => (i.product === productId ? { ...i, note: note.slice(0, 200) } : i)),
     )
   }
 
@@ -322,32 +332,45 @@ export default function WaiterPage() {
           ) : (
             <div className="space-y-2">
               {cart.map((item) => (
-                <div key={item.product} className="flex items-center gap-2">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm text-slate-900 dark:text-white">
-                      {item.name}
+                <div
+                  key={item.product}
+                  className="rounded-lg border border-slate-100 p-2 dark:border-slate-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium text-slate-900 dark:text-white">
+                        {item.name}
+                      </span>
+                      <span className="block text-xs text-slate-500">
+                        {formatSom(item.price * item.quantity)}
+                      </span>
                     </span>
-                    <span className="block text-xs text-slate-500">
-                      {formatSom(item.price * item.quantity)}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => changeQuantity(item.product, -1)}
-                    className="grid h-7 w-7 place-items-center rounded border border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
-                    aria-label="Kamaytirish"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </button>
-                  <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => changeQuantity(item.product, 1)}
-                    className="grid h-7 w-7 place-items-center rounded border border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
-                    aria-label="Ko'paytirish"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => changeQuantity(item.product, -1)}
+                      className="grid h-7 w-7 place-items-center rounded border border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
+                      aria-label="Kamaytirish"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => changeQuantity(item.product, 1)}
+                      className="grid h-7 w-7 place-items-center rounded border border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-300"
+                      aria-label="Ko'paytirish"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Taomga izoh (masalan: achchiqsiz, piyozsiz)..."
+                    value={item.note || ''}
+                    maxLength={200}
+                    onChange={(e) => updateItemNote(item.product, e.target.value)}
+                    className="mt-1.5 w-full rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-800 placeholder-slate-400 outline-none transition focus:border-indigo-400 focus:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                  />
                 </div>
               ))}
 

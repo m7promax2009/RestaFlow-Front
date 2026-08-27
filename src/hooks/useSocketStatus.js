@@ -1,4 +1,4 @@
-// Socket ulanish holatini kuzatib boradi — UI'da indikator ko'rsatish uchun
+﻿// Socket ulanish holatini kuzatib boradi — UI'da indikator ko'rsatish uchun
 // (masalan AppLayout'da "ulanmagan" ogohlantirish).
 import { useEffect, useState } from 'react'
 import { socket } from '../services/socket'

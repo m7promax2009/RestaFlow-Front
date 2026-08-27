@@ -7,7 +7,7 @@
 // Mas'ul: Ziyodulla.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowRight, CheckCircle2, Clock, StickyNote, User } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check, CheckCircle2, Clock, StickyNote, User } from 'lucide-react'
 import { ORDER_STATUS } from '../../../constants/roles'
 import { Button } from '../../../components/ui'
 
@@ -35,13 +35,32 @@ function urgencyClasses(minutes, status) {
   return 'bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400'
 }
 
-export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
+export default function OrderTicket({
+  order,
+  onStartPreparing,
+  onMarkReady,
+  onToggleItemReady,
+}) {
   const { t } = useTranslation()
   const minutes = useElapsedMinutes(order.createdAt)
   const table = order.table?.number ?? order.table ?? '—'
 
+  const isDelayed = minutes >= 15 && order.status === ORDER_STATUS.NEW
+
+  const handleItemClick = (item, index) => {
+    const targetKey = item._id || item.id || index
+    const nextState = !item.isReady
+    onToggleItemReady?.(order._id ?? order.id, targetKey, nextState)
+  }
+
   return (
-    <li className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm ring-1 ring-black/[0.02] transition-shadow hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+    <li
+      className={`group relative overflow-hidden rounded-2xl border bg-white shadow-sm ring-1 ring-black/[0.02] transition-all hover:shadow-md dark:bg-slate-900 ${
+        isDelayed
+          ? 'border-rose-500 ring-2 ring-rose-400/30 dark:border-rose-500'
+          : 'border-slate-200/80 dark:border-slate-800'
+      }`}
+    >
       {/* Perforatsiyalangan yuqori qirra — signature detali */}
       <div
         aria-hidden="true"
@@ -56,6 +75,19 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
       />
 
       <div className="px-4 pb-4 pt-2.5">
+        {/* Kechikayotgan buyurtma yorlig'i (Urgency Alert) */}
+        {isDelayed && (
+          <div className="mb-2.5 flex items-center justify-between rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-bold text-rose-600 animate-pulse dark:border-rose-800/40 dark:bg-rose-950/40 dark:text-rose-400">
+            <span className="flex items-center gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Kechikmoqda!</span>
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider opacity-80">
+              15+ daqiqa
+            </span>
+          </div>
+        )}
+
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="font-mono text-[11px] font-medium uppercase tracking-wide text-slate-400">
@@ -75,18 +107,39 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
           </span>
         </div>
 
-        <ul className="mt-3 space-y-1.5 border-t border-dashed border-slate-200 pt-3 text-sm dark:border-slate-700">
-          {order.items?.map((item, index) => (
-            <li
-              key={`${item.product ?? item.name}-${index}`}
-              className="flex items-center justify-between gap-2 text-slate-700 dark:text-slate-200"
-            >
-              <span className="truncate">{item.name ?? item.product}</span>
-              <span className="shrink-0 font-mono font-semibold text-slate-400">
-                ×{item.quantity}
-              </span>
-            </li>
-          ))}
+        <ul className="mt-3 space-y-2 border-t border-dashed border-slate-200 pt-3 text-sm dark:border-slate-700">
+          {order.items?.map((item, index) => {
+            const isChecked = Boolean(item.isReady)
+            const itemNote = item.note || item.comment || ''
+            return (
+              <li
+                key={`${item.product ?? item.name}-${index}`}
+                onClick={() => handleItemClick(item, index)}
+                className="group flex flex-col gap-0.5 text-slate-700 dark:text-slate-200 cursor-pointer select-none rounded-lg p-1 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                title="Bajarilganini belgilash uchun bosing (barcha oshpazlarda saqlanadi va ko'rinadi)"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`flex items-center gap-1.5 transition-all truncate font-medium ${isChecked ? 'line-through opacity-50' : ''}`}>
+                    {isChecked && <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 stroke-[3]" />}
+                    <span>{item.name ?? item.product}</span>
+                  </span>
+                  <span className={`shrink-0 font-mono font-semibold text-slate-400 transition-opacity ${isChecked ? 'opacity-50' : ''}`}>
+                    ×{item.quantity}
+                  </span>
+                </div>
+                {itemNote && (
+                  <p
+                    className={`mt-0.5 flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1 text-xs text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 transition-opacity ${
+                      isChecked ? 'opacity-40 line-through' : ''
+                    }`}
+                  >
+                    <span className="font-bold text-amber-500">↳</span>
+                    <span>{itemNote}</span>
+                  </p>
+                )}
+              </li>
+            )
+          })}
         </ul>
 
         {order.notes && (

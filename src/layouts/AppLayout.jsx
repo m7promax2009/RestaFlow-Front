@@ -11,8 +11,8 @@ import { navItemsForRole } from '../constants/navigation'
 import { ROLE_LABELS } from '../constants/roles'
 import { useNotificationsSocket } from '../features/notifications'
 import { useAuthSync } from '../hooks/useAuthSync'
-import { disconnectSocket } from '../services/socket'
 import { useSocketStatus } from '../hooks/useSocketStatus'
+import { disconnectSocket } from '../services/socket'
 
 export default function AppLayout() {
   const dispatch = useDispatch()
@@ -41,7 +41,7 @@ export default function AppLayout() {
     disconnectSocket()
     clearSession()
     dispatch(clearCredentials())
-    navigate('/login', { replace: true })
+    navigate('/login', { replace: true, state: null })
   }
 
   const sidebar = (
@@ -153,7 +153,7 @@ export default function AppLayout() {
               aria-label="Bildirishnomalar"
             >
               <span
-                title={isSocketConnected ? "Ulangan" : "Ulanish yo'q"}
+                title={isSocketConnected ? "Real-time ulangan" : "Real-time uzilgan (qayta ulanmoqda...)"}
                 className={`absolute -left-0.5 -top-0.5 inline-block h-2 w-2 rounded-full ${
                   isSocketConnected ? 'bg-emerald-500' : 'bg-rose-500'
                 }`}

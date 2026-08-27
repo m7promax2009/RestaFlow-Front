@@ -1,9 +1,10 @@
 import Badge from '../../../components/ui/Badge';
-import { TABLE_STATUS_LABELS } from '../../../constants/tableStatus';
+import { TABLE_STATUS_LABELS, TABLE_STATUS_TONE } from '../../../constants/roles';
 
 const TableCard = ({ table, onClick, isSelected }) => {
   const statusColors = {
     available: 'border-green-500 bg-green-50 dark:bg-green-900/10',
+    free: 'border-green-500 bg-green-50 dark:bg-green-900/10',
     occupied: 'border-red-500 bg-red-50 dark:bg-red-900/10',
     reserved: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10',
     cleaning: 'border-gray-400 bg-gray-50 dark:bg-gray-800',
@@ -25,7 +26,7 @@ const TableCard = ({ table, onClick, isSelected }) => {
           {table.number}
         </div>
         <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {table.zone}
+          {table.zone || table.location || ''}
         </div>
         <div className="text-xs text-gray-400 dark:text-gray-500">
           {table.capacity} kishi
@@ -34,7 +35,9 @@ const TableCard = ({ table, onClick, isSelected }) => {
 
       {/* Holat */}
       <div className="absolute top-2 right-2">
-        <Badge status={table.status} label={TABLE_STATUS_LABELS[table.status]} />
+        <Badge variant={TABLE_STATUS_TONE[table.status] || 'info'}>
+          {TABLE_STATUS_LABELS[table.status] ?? table.status}
+        </Badge>
       </div>
 
       {/* Buyurtma ID */}
