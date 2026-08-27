@@ -6,6 +6,7 @@ import { AlertTriangle, CalendarDays, Check, Pencil, Plus, Trash2, X } from 'luc
 import { toast } from 'react-toastify'
 
 import {
+  clearAllReservations,
   createReservation,
   deleteReservation,
   getReservations,
@@ -180,6 +181,19 @@ export default function ReservationsPage() {
     onError: (error) => toast.error(apiErrorMessage(error, "O'chirib bo'lmadi")),
   })
 
+  const clearAllMutation = useMutation({
+    mutationFn: () => clearAllReservations(),
+    onMutate: async () => {
+      setConfirmAction(null)
+      queryClient.setQueryData(['reservations', startDate, endDate], [])
+    },
+    onSuccess: () => {
+      toast.success("Barcha bronlar o'chirildi")
+      invalidate()
+    },
+    onError: (error) => toast.error(apiErrorMessage(error, "Bronlarni o'chirib bo'lmadi")),
+  })
+
   const openCreate = () => {
     setEditing(null)
     setForm(EMPTY_FORM)
@@ -259,9 +273,19 @@ export default function ReservationsPage() {
         title="Bronlar"
         subtitle="Mijozlar uchun stol bandliklarini boshqarish"
         actions={
-          <Button onClick={openCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Yangi bron
-          </Button>
+          <div className="flex items-center gap-2">
+            {canDelete && reservations.length > 0 && (
+              <Button
+                variant="danger"
+                onClick={() => setConfirmAction({ type: 'clear_all' })}
+              >
+                <Trash2 className="mr-1.5 h-4 w-4" /> Barchasini tozalash
+              </Button>
+            )}
+            <Button onClick={openCreate}>
+              <Plus className="mr-2 h-4 w-4" /> Yangi bron
+            </Button>
+          </div>
         }
       />
 
@@ -511,12 +535,14 @@ export default function ReservationsPage() {
             </Button>
             <Button
               variant="danger"
-              isLoading={cancelMutation.isPending || deleteMutation.isPending}
+              isLoading={cancelMutation.isPending || deleteMutation.isPending || clearAllMutation.isPending}
               onClick={() => {
                 if (confirmAction?.type === 'cancel') {
                   cancelMutation.mutate(confirmAction.reservation)
                 } else if (confirmAction?.type === 'delete') {
                   deleteMutation.mutate(confirmAction.reservation._id)
+                } else if (confirmAction?.type === 'clear_all') {
+                  clearAllMutation.mutate()
                 }
               }}
             >
@@ -532,7 +558,9 @@ export default function ReservationsPage() {
           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
             {confirmAction?.type === 'cancel'
               ? `"${confirmAction?.reservation?.customerName}" bronini bekor qilmoqchimisiz?`
-              : `"${confirmAction?.reservation?.customerName}" bronini rostdan ham o'chirib tashlamoqchimisiz?`}
+              : confirmAction?.type === 'delete'
+              ? `"${confirmAction?.reservation?.customerName}" bronini rostdan ham o'chirib tashlamoqchimisiz?`
+              : "Barcha bronlarni rostdan ham o'chirib tashlamoqchimisiz? Bu amalni ortga qaytarib bo'lmaydi."}
           </p>
         </div>
       </Modal>
