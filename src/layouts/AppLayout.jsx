@@ -1,9 +1,9 @@
-// Ilova qobig'i вЂ” sidebar (rolga qarab filtrlangan), topbar va kontent.
-// Menyu bandlari constants/navigation.js dan olinadi (marshrutlar bilan bir manba).
+// Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
+// Premium Orange brend dizayn sistemasi.
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Bell, LogOut, Menu, User, X } from 'lucide-react'
+import { Bell, LogOut, Menu, User, X, UtensilsCrossed } from 'lucide-react'
 
 import { clearCredentials } from '../features/auth/authSlice'
 import { clearSession } from '../features/auth/session'
@@ -45,37 +45,43 @@ export default function AppLayout() {
   }
 
   const sidebar = (
-    <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between px-5 py-5">
-        <span className="text-lg font-bold tracking-tight text-white">
-          Resto<span className="text-indigo-400">Flow</span>
-        </span>
+    <div className="flex h-full flex-col bg-[#0F172A] text-white border-r border-gray-800">
+      <div className="flex items-center justify-between px-5 py-5 border-b border-gray-800/80">
+        <div className="flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#F97316] to-[#EA580C] text-white shadow-md shadow-orange-500/30">
+            <UtensilsCrossed size={18} />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white">
+            Resto<span className="text-[#F97316]">Flow</span>
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => setMobileOpen(false)}
-          className="text-slate-400 hover:text-white lg:hidden"
+          className="text-gray-400 hover:text-white lg:hidden"
           aria-label="Menyuni yopish"
         >
           <X className="h-5 w-5" />
         </button>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-3 py-4">
         {items.map(({ key, path, label, icon: Icon }) => (
           <NavLink
             key={key}
             to={path}
             className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActive
-                ? 'bg-indigo-600 text-white'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+              `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150 ${
+                isActive
+                  ? 'bg-gradient-to-r from-[#F97316] to-[#EA580C] text-white shadow-lg shadow-orange-500/25'
+                  : 'text-gray-300 hover:bg-white/10 hover:text-white'
               }`
             }
           >
             <Icon className="h-[18px] w-[18px] shrink-0" />
             <span className="truncate">{label}</span>
             {key === 'notifications' && unreadCount > 0 && (
-              <span className="ml-auto rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+              <span className="ml-auto rounded-full bg-[#F97316] px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -83,19 +89,19 @@ export default function AppLayout() {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-slate-800 p-3">
+      <div className="border-t border-gray-800/80 p-3">
         <NavLink
           to="/profile"
-          className="mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          className="mb-1.5 flex items-center gap-3 rounded-xl p-2.5 text-sm text-gray-300 transition-all hover:bg-white/10 hover:text-white"
         >
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#F97316] to-[#EA580C] text-xs font-bold text-white shadow-sm">
             {(user?.name ?? user?.email ?? '?').charAt(0).toUpperCase()}
           </span>
           <span className="min-w-0 flex-1">
             <span className="block truncate font-semibold text-white">
               {user?.name ?? user?.email ?? 'Foydalanuvchi'}
             </span>
-            <span className="block truncate text-xs text-slate-400">
+            <span className="block truncate text-xs font-medium text-gray-400">
               {ROLE_LABELS[user?.role] ?? user?.role}
             </span>
           </span>
@@ -104,7 +110,7 @@ export default function AppLayout() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-rose-600/20 hover:text-rose-300"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-gray-400 transition-all hover:bg-red-500/10 hover:text-red-400"
         >
           <LogOut className="h-[18px] w-[18px]" />
           Chiqish
@@ -114,9 +120,9 @@ export default function AppLayout() {
   )
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Desktop sidebar - sticky h-screen */}
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-slate-900 lg:flex">{sidebar}</aside>
+    <div className="flex min-h-screen bg-[#FFFDF9] dark:bg-[#0B0F17] transition-colors">
+      {/* Desktop sidebar */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 lg:block">{sidebar}</aside>
 
       {/* Mobil sidebar */}
       {mobileOpen && (
@@ -124,32 +130,32 @@ export default function AppLayout() {
           <button
             type="button"
             aria-label="Menyuni yopish"
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 lg:hidden">{sidebar}</aside>
+          <aside className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden">{sidebar}</aside>
         </>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 lg:px-6">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[#E5E7EB] bg-white/80 px-4 py-3 backdrop-blur-md dark:border-gray-800 dark:bg-[#0B0F17]/80 lg:px-6 transition-colors">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+            className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 lg:hidden"
             aria-label="Menyuni ochish"
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          <span className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <span className="truncate text-base font-bold bg-gradient-to-r from-[#111827] via-[#F97316] to-[#EA580C] bg-clip-text text-transparent dark:from-white dark:via-orange-400 dark:to-amber-400">
             {items.find((i) => i.path === location.pathname)?.label ?? 'RestoFlow'}
           </span>
 
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ml-auto flex items-center gap-2">
             <NavLink
               to="/notifications"
-              className="relative rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="relative rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"
               aria-label="Bildirishnomalar"
             >
               <span
@@ -160,12 +166,12 @@ export default function AppLayout() {
               />
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
+                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#F97316] ring-2 ring-white dark:ring-[#0B0F17] animate-pulse" />
               )}
             </NavLink>
             <NavLink
               to="/profile"
-              className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"
               aria-label="Profil"
             >
               <User className="h-5 w-5" />
