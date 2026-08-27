@@ -1,4 +1,4 @@
-// Buyurtma "cheki" — Premium Login & Brand Orange dizayn sistemasi.
+// Buyurtma "cheki" — Premium Orange brend dizayn sistemasi (Yorqin Oq va To'q Rejim).
 // Zulfiqor backend API (PATCH /orders/:id/items/:itemId) va Socket.io real-time bilan to'liq ulangan.
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -52,13 +52,13 @@ export default function OrderTicket({
 
   return (
     <li
-      className={`relative overflow-hidden rounded-2xl bg-white shadow-[0_10px_30px_rgba(0,0,0,0.05)] transition-all duration-200 dark:bg-[#0F172A] ${
+      className={`relative overflow-hidden rounded-2xl bg-white shadow-[0_10px_25px_rgba(0,0,0,0.04)] transition-all duration-200 dark:bg-[#0F172A] ${
         isDelayed
           ? 'border-2 border-rose-500 ring-4 ring-rose-500/20 bg-rose-50/20 dark:bg-rose-950/20'
-          : 'border border-slate-200/90 hover:border-orange-500/40 dark:border-slate-800'
+          : 'border border-slate-200/90 hover:border-orange-500/40 dark:border-slate-800 dark:hover:border-orange-500/40'
       }`}
     >
-      {/* Signature perforatsiyalangan yuqori brend qirra */}
+      {/* Perforatsiyalangan brend to'q sariq yuqori qirra */}
       <div
         aria-hidden="true"
         className="h-2.5 rounded-t-2xl opacity-40"
@@ -74,7 +74,7 @@ export default function OrderTicket({
       <div className="px-4 pb-4 pt-1">
         {/* Kechikayotgan buyurtma yorlig'i (Urgency Alert) */}
         {isDelayed && (
-          <div className="mb-3 flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 shadow-sm dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-400 animate-pulse">
+          <div className="mb-3 flex items-center justify-between rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 shadow-xs dark:border-rose-800 dark:bg-rose-950/80 dark:text-rose-400 animate-pulse">
             <span className="flex items-center gap-1.5">
               <AlertTriangle size={15} className="shrink-0 text-rose-500" />
               <span>Kechikmoqda!</span>
@@ -97,7 +97,7 @@ export default function OrderTicket({
             </h4>
           </div>
           <span
-            className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-bold shadow-xs ${urgencyClasses(minutes, order.status)}`}
+            className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 font-mono text-xs font-bold shadow-2xs ${urgencyClasses(minutes, order.status)}`}
           >
             <Clock className="h-3.5 w-3.5" />
             {minutes < 1
@@ -136,7 +136,7 @@ export default function OrderTicket({
                     className={`font-mono text-xs font-extrabold shrink-0 transition-opacity rounded-full px-2 py-0.5 ${
                       isChecked
                         ? 'opacity-40 text-slate-400 bg-slate-100 dark:bg-slate-800'
-                        : 'bg-gradient-to-br from-[#F97316] to-[#EA580C] text-white shadow-xs'
+                        : 'bg-gradient-to-br from-[#F97316] to-[#EA580C] text-white shadow-2xs'
                     }`}
                   >
                     ×{item.quantity}
@@ -144,7 +144,7 @@ export default function OrderTicket({
                 </div>
                 {itemNote && (
                   <p
-                    className={`mt-0.5 flex items-start gap-1.5 rounded-lg border border-amber-300/40 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-300 transition-opacity ${
+                    className={`mt-0.5 flex items-start gap-1.5 rounded-lg border border-amber-300/40 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:text-amber-300 transition-opacity ${
                       isChecked ? 'opacity-40 line-through' : ''
                     }`}
                   >
@@ -158,7 +158,7 @@ export default function OrderTicket({
         </ul>
 
         {order.notes && (
-          <p className="mt-2.5 flex items-start gap-2 rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700 dark:text-amber-300">
+          <p className="mt-2.5 flex items-start gap-2 rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-800 dark:text-amber-300">
             <StickyNote size={15} className="mt-0.5 shrink-0 text-amber-500" />
             <span>{order.notes}</span>
           </p>

@@ -1,5 +1,5 @@
 // Oshxona ekrani (KDS) — Kutilmoqda / Tayyorlanmoqda / Tayyor ustunlari.
-// Premium Login & Brand Orange dizayn sistemasi.
+// Premium Orange brend dizayn sistemasi (Yorqin Oq va To'q Rejim).
 import { useTranslation } from 'react-i18next'
 import { RefreshCw, UtensilsCrossed, Volume2, VolumeX, Sparkles } from 'lucide-react'
 
@@ -32,16 +32,18 @@ export default function KitchenPage() {
   const onMarkReady = (id) => setStatus(id, ORDER_STATUS.READY, 'complete')
 
   return (
-    <div className="min-h-full rounded-3xl bg-gradient-to-br from-[#FAF8F5] via-[#FFFDF9] to-[#F7F4EF] p-4 sm:p-6 dark:from-[#0B0F17] dark:via-[#0F172A] dark:to-[#1E293B] border border-slate-200/60 dark:border-slate-800/80 shadow-sm transition-colors">
+    <div className="min-h-full rounded-3xl bg-white p-4 sm:p-6 border border-slate-200/90 shadow-2xs dark:bg-[#0B0F17] dark:border-slate-800/80 transition-colors">
       <PageHeader
         title={
           <div className="flex items-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97316] via-[#EA580C] to-[#C2410C] text-white shadow-xl shadow-orange-500/30">
+            <div className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F97316] via-[#EA580C] to-[#C2410C] text-white shadow-lg shadow-orange-500/25">
               <UtensilsCrossed size={22} />
             </div>
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-[#F97316] to-[#EA580C] bg-clip-text text-transparent dark:from-white dark:via-orange-300 dark:to-amber-400">
-                {t('kitchen.title')}
+              <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight">
+                <span className="bg-gradient-to-r from-slate-900 via-[#F97316] to-[#EA580C] bg-clip-text text-transparent dark:from-white dark:via-orange-300 dark:to-amber-400">
+                  {t('kitchen.title')}
+                </span>
               </h1>
             </div>
           </div>
@@ -59,7 +61,7 @@ export default function KitchenPage() {
               variant="secondary"
               onClick={testSound}
               title={t('testSound')}
-              className="rounded-xl border-slate-200 dark:border-slate-700 hover:bg-orange-500/10 hover:text-[#F97316] dark:hover:bg-slate-800"
+              className="rounded-xl border-slate-200 bg-slate-50 text-slate-700 hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               {t('testSound')}
             </Button>
@@ -69,7 +71,7 @@ export default function KitchenPage() {
               onClick={toggleSound}
               aria-pressed={soundEnabled}
               title={soundEnabled ? t('soundOn') : t('soundOff')}
-              className="rounded-xl border-slate-200 dark:border-slate-700 hover:bg-orange-500/10 hover:text-[#F97316] dark:hover:bg-slate-800"
+              className="rounded-xl border-slate-200 bg-slate-50 text-slate-700 hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               {soundEnabled ? (
                 <Volume2 className="mr-2 h-4 w-4 text-[#F97316]" />
@@ -82,7 +84,7 @@ export default function KitchenPage() {
               type="button"
               variant="secondary"
               onClick={() => refetch()}
-              className="rounded-xl border-slate-200 dark:border-slate-700 hover:bg-orange-500/10 hover:text-[#F97316] dark:hover:bg-slate-800"
+              className="rounded-xl border-slate-200 bg-slate-50 text-slate-700 hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
             >
               <RefreshCw className={`mr-2 h-4 w-4 text-[#F97316] ${isFetching ? 'animate-spin' : ''}`} />
               {t('refresh')}
@@ -93,7 +95,7 @@ export default function KitchenPage() {
       />
 
       {isError && (
-        <Card className="mb-4 border-rose-200 bg-rose-50/80 dark:border-rose-900/60 dark:bg-rose-950/40">
+        <Card className="mb-4 border-rose-200 bg-rose-50 dark:border-rose-900/60 dark:bg-rose-950/40">
           <p className="text-sm font-semibold text-rose-600 dark:text-rose-400">
             {apiErrorMessage(error, t('kitchen.loadFailed'))}
           </p>
