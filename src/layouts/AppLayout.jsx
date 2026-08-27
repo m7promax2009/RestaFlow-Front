@@ -46,7 +46,7 @@ export default function AppLayout() {
 
   const sidebar = (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-5 py-5">
+      <div className="flex shrink-0 items-center justify-between px-5 py-5">
         <span className="text-lg font-bold tracking-tight text-white">
           Resto<span className="text-indigo-400">Flow</span>
         </span>
@@ -83,7 +83,7 @@ export default function AppLayout() {
         ))}
       </nav>
 
-      <div className="border-t border-slate-800 p-3">
+      <div className="shrink-0 border-t border-slate-800 p-3">
         <NavLink
           to="/profile"
           className="mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
@@ -115,8 +115,8 @@ export default function AppLayout() {
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 bg-slate-900 lg:block">{sidebar}</aside>
+      {/* Desktop sidebar - sticky h-screen */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-slate-900 lg:flex">{sidebar}</aside>
 
       {/* Mobil sidebar */}
       {mobileOpen && (

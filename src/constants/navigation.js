@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 
-import { ROLES } from './roles'
+import { ROLES, ROLE_HOME } from './roles.js'
 
 const ALL = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER, ROLES.CASHIER, ROLES.COOK]
 const STAFF = [ROLES.ADMIN, ROLES.MANAGER]

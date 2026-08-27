@@ -15,7 +15,8 @@ export function normalizeKitchenOrder(o) {
     notes: o.notes || o.note || '',
     items: (o.items ?? []).map((i, index) => ({
       id: i._id || i.id || String(index),
-      product: i.name ?? i.product ?? 'Taom',
+      product: i.name ?? i.product?.name ?? i.product ?? 'Taom',
+      name: i.name ?? i.product?.name ?? i.product ?? 'Taom',
       quantity: i.quantity ?? 1,
       note: i.note || i.comment || i.notes || i.instruction || '',
       isReady: Boolean(

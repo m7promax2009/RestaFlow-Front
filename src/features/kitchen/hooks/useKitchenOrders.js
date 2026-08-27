@@ -53,7 +53,7 @@ export function useKitchenOrders() {
 
   const announceNewOrder = useCallback(
     (order) => {
-      const id = order?._id ?? order?.id
+      const id = order?._id ?? order?.id ?? order?.orderId
       if (id) {
         if (announcedIdsRef.current.has(id)) return
         announcedIdsRef.current.add(id)
