@@ -83,12 +83,10 @@ export default function WaiterPage() {
         })),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       }),
-    onMutate: async () => {
+    onSuccess: () => {
       setCart([])
       setNotes('')
       setTableId('')
-    },
-    onSuccess: () => {
       toast.success('Buyurtma yaratildi')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['tables'] })
