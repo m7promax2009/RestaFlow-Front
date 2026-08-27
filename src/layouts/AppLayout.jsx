@@ -140,7 +140,7 @@ export default function AppLayout() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[#E5E7EB] bg-white/80 px-4 py-3 backdrop-blur-md dark:border-gray-800 dark:bg-[#0B0F17]/80 lg:px-6 transition-colors">
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-[#E5E7EB] bg-white/90 px-4 py-3 backdrop-blur-md dark:border-gray-800 dark:bg-[#0B0F17]/90 lg:px-6 transition-colors">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -159,14 +159,20 @@ export default function AppLayout() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               title={theme === 'dark' ? "Yorqin (oq) rejimga o'tish" : "Tungi (qorong'u) rejimga o'tish"}
               aria-label="Mavzuni almashtirish"
             >
               {theme === 'dark' ? (
-                <Sun className="h-5 w-5 text-amber-400" />
+                <>
+                  <Moon className="h-4 w-4 text-indigo-400" />
+                  <span className="hidden sm:inline">Tungi rejim</span>
+                </>
               ) : (
-                <Moon className="h-5 w-5 text-slate-700" />
+                <>
+                  <Sun className="h-4 w-4 text-amber-500" />
+                  <span className="hidden sm:inline">Yorqin Oq</span>
+                </>
               )}
             </button>
 
