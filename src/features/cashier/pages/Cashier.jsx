@@ -104,10 +104,18 @@ export default function Cashier() {
         method,
         ...(amount ? { amount } : {}),
       }),
-    onSuccess: () => {
-      toast.success("To'lov muvaffaqiyatli qabul qilindi!")
+    onMutate: async (amount) => {
       setCustomAmount('')
       setSplitCount(1)
+      if (!amount || amount >= remaining) {
+        queryClient.setQueryData(['orders', 'unpaid'], (old) => {
+          if (!Array.isArray(old)) return old
+          return old.filter((o) => o._id !== selectedId)
+        })
+      }
+    },
+    onSuccess: () => {
+      toast.success("To'lov muvaffaqiyatli qabul qilindi!")
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['receipt', selectedId] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })

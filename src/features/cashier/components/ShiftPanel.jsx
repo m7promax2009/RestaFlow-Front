@@ -45,31 +45,42 @@ export default function ShiftPanel({ onShiftChange }) {
   // Smena ochish — POST /api/shifts/open
   const openMutation = useMutation({
     mutationFn: (payload) => openShift(payload),
-    onSuccess: (res) => {
-      toast.success('Smena muvaffaqiyatli ochildi!')
+    onMutate: async () => {
       setShowOpenForm(false)
       setOpeningBalance('')
-      queryClient.invalidateQueries({ queryKey: ['shift', 'current'] })
+    },
+    onSuccess: (res) => {
+      toast.success('Smena muvaffaqiyatli ochildi!')
+      queryClient.setQueryData(['shift', 'current'], unwrap(res, 'shift'))
+      queryClient.invalidateQueries({ queryKey: ['shift'] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       onShiftChange?.(unwrap(res, 'shift'))
     },
-    onError: (err) => toast.error(apiErrorMessage(err, "Smenani ochib bo'lmadi")),
+    onError: (err) => {
+      setShowOpenForm(true)
+      toast.error(apiErrorMessage(err, "Smenani ochib bo'lmadi"))
+    },
   })
 
   // Smena yopish — POST /api/shifts/close
   const closeMutation = useMutation({
     mutationFn: (payload) => closeShift(payload),
-    onSuccess: (res) => {
-      toast.success('Smena muvaffaqiyatli yopildi!')
+    onMutate: async () => {
       setShowCloseForm(false)
       setClosingBalance('')
-      queryClient.invalidateQueries({ queryKey: ['shift', 'current'] })
+    },
+    onSuccess: () => {
+      toast.success('Smena muvaffaqiyatli yopildi!')
+      queryClient.setQueryData(['shift', 'current'], null)
+      queryClient.invalidateQueries({ queryKey: ['shift'] })
       queryClient.invalidateQueries({ queryKey: ['reports'] })
       onShiftChange?.(null)
-      // Z-Reportni ko'rsatish
       setShowZReport(true)
     },
-    onError: (err) => toast.error(apiErrorMessage(err, "Smenani yopib bo'lmadi")),
+    onError: (err) => {
+      setShowCloseForm(true)
+      toast.error(apiErrorMessage(err, "Smenani yopib bo'lmadi"))
+    },
   })
 
   const shift = shiftQuery.data

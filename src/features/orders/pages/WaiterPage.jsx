@@ -83,11 +83,13 @@ export default function WaiterPage() {
         })),
         ...(notes.trim() ? { notes: notes.trim() } : {}),
       }),
-    onSuccess: () => {
-      toast.success('Buyurtma yaratildi')
+    onMutate: async () => {
       setCart([])
       setNotes('')
       setTableId('')
+    },
+    onSuccess: () => {
+      toast.success('Buyurtma yaratildi')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['tables'] })
     },
@@ -96,6 +98,12 @@ export default function WaiterPage() {
 
   const statusMutation = useMutation({
     mutationFn: ({ id, nextStatus }) => updateOrderStatus(id, nextStatus),
+    onMutate: async ({ id, nextStatus }) => {
+      queryClient.setQueryData(['orders', 'waiter-active'], (old) => {
+        if (!Array.isArray(old)) return old
+        return old.map((o) => (o._id === id ? { ...o, status: nextStatus } : o))
+      })
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders'] }),
     onError: (error) => toast.error(apiErrorMessage(error, "Holat o'zgarmadi")),
   })
