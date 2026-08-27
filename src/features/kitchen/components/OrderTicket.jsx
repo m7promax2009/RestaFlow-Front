@@ -28,23 +28,21 @@ function urgencyClasses(minutes, status) {
   return 'bg-cherry/15 text-cherry'
 }
 
-export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
+export default function OrderTicket({
+  order,
+  onStartPreparing,
+  onMarkReady,
+  onToggleItemReady,
+}) {
   const { t } = useTranslation()
   const minutes = useElapsedMinutes(order.createdAt)
-  const [checkedItems, setCheckedItems] = useState(new Set())
 
   const isDelayed = minutes >= 15 && order.status === ORDER_STATUS.NEW
 
-  const toggleCheckItem = (index) => {
-    setCheckedItems((prev) => {
-      const next = new Set(prev)
-      if (next.has(index)) {
-        next.delete(index)
-      } else {
-        next.add(index)
-      }
-      return next
-    })
+  const handleItemClick = (item, index) => {
+    const targetKey = item.id ?? index
+    const nextState = !item.isReady
+    onToggleItemReady?.(order.id, targetKey, nextState)
   }
 
   return (
@@ -102,17 +100,17 @@ export default function OrderTicket({ order, onStartPreparing, onMarkReady }) {
           </span>
         </div>
 
-        {/* Taomlar ro'yxati (Item Check-off) */}
+        {/* Taomlar ro'yxati (Item Check-off with backend/socket sync) */}
         <ul className="mt-3 space-y-2 border-t border-dashed border-black/10 pt-3 text-sm dark:border-ink-border">
           {order.items?.map((item, index) => {
-            const isChecked = checkedItems.has(index)
+            const isChecked = Boolean(item.isReady)
             const itemNote = item.note || item.comment || item.notes
             return (
               <li
                 key={`${item.product}-${index}`}
-                onClick={() => toggleCheckItem(index)}
+                onClick={() => handleItemClick(item, index)}
                 className="group flex flex-col gap-0.5 text-charcoal dark:text-fog cursor-pointer select-none rounded-lg p-1 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-                title="Bajarilganini belgilash uchun bosing"
+                title="Bajarilganini belgilash uchun bosing (barcha oshpazlarda saqlanadi va ko'rinadi)"
               >
                 <div className="flex items-baseline justify-between gap-2 font-medium">
                   <span className={`flex items-center gap-1.5 transition-all ${isChecked ? 'line-through opacity-50' : ''}`}>

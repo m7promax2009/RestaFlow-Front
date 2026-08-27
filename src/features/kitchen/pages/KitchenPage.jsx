@@ -1,6 +1,6 @@
 // Oshxona paneli — buyurtmalar Kutilmoqda → Tayyorlanmoqda → Tayyor.
 // Socket.io orqali real-time yangilanadi.
-// Mas'ul: Ziyodulla.
+// Mas'ul: Ziyodulla & Team.
 import { useTranslation } from 'react-i18next'
 import { Radio, WifiOff } from 'lucide-react'
 import { useKitchenOrders } from '../hooks/useKitchenOrders'
@@ -15,7 +15,7 @@ const CONNECTION_META = {
 
 export default function KitchenPage() {
   const { t } = useTranslation()
-  const { columns, connection, setStatus } = useKitchenOrders()
+  const { columns, connection, setStatus, toggleItemReady } = useKitchenOrders()
   const meta = CONNECTION_META[connection] ?? CONNECTION_META.connecting
   const ConnIcon = meta.icon
 
@@ -43,18 +43,21 @@ export default function KitchenPage() {
           orders={columns.pending}
           onStartPreparing={onStartPreparing}
           onMarkReady={onMarkReady}
+          onToggleItemReady={toggleItemReady}
         />
         <KitchenColumn
           id="preparing"
           orders={columns.preparing}
           onStartPreparing={onStartPreparing}
           onMarkReady={onMarkReady}
+          onToggleItemReady={toggleItemReady}
         />
         <KitchenColumn
           id="ready"
           orders={columns.ready}
           onStartPreparing={onStartPreparing}
           onMarkReady={onMarkReady}
+          onToggleItemReady={toggleItemReady}
         />
       </div>
     </div>

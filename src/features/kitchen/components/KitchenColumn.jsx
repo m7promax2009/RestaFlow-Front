@@ -9,7 +9,13 @@ const DOT_COLOR = {
   ready: 'bg-mint',
 }
 
-export default function KitchenColumn({ id, orders, onStartPreparing, onMarkReady }) {
+export default function KitchenColumn({
+  id,
+  orders,
+  onStartPreparing,
+  onMarkReady,
+  onToggleItemReady,
+}) {
   const { t } = useTranslation()
 
   const totalOrders = orders.length
@@ -49,6 +55,7 @@ export default function KitchenColumn({ id, orders, onStartPreparing, onMarkRead
               order={order}
               onStartPreparing={onStartPreparing}
               onMarkReady={onMarkReady}
+              onToggleItemReady={onToggleItemReady}
             />
           ))}
         </ul>

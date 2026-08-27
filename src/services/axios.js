@@ -1,10 +1,11 @@
 // Axios instance — barcha API so'rovlari shu orqali yuboriladi.
 // Mas'ul: Fayoz (auth interceptor). Foydalanadi: hamma feature.
 import axios from 'axios'
-import { disconnectSocket } from './socket'
+import { disconnectSocket } from './socket.js'
 
-const rawApiUrl = import.meta.env.VITE_API_URL
-const baseURL = import.meta.env.DEV
+const rawApiUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_URL : undefined
+const isDev = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV)
+const baseURL = isDev
   ? (rawApiUrl && !rawApiUrl.startsWith('http') ? rawApiUrl : '/api')
   : (rawApiUrl || 'https://backend-production-109c0.up.railway.app/api')
 

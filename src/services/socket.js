@@ -2,9 +2,11 @@
 // Mas'ul: Ziyoddila (infra). Foydalanadi: kitchen, orders, notifications.
 import { io } from 'socket.io-client'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'https://backend-production-109c0.up.railway.app/api'
+const rawApiUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_URL : undefined
+const apiUrl = rawApiUrl || 'https://backend-production-109c0.up.railway.app/api'
 const defaultSocketUrl = apiUrl.replace(/\/api\/?$/, '')
-const URL = import.meta.env.VITE_SOCKET_URL || defaultSocketUrl
+const rawSocketUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SOCKET_URL : undefined
+const URL = rawSocketUrl || defaultSocketUrl
 
 export const socket = io(URL, {
   autoConnect: false,
@@ -24,4 +26,6 @@ export const connectSocket = (token) => {
 
 export const disconnectSocket = () => socket.disconnect()
 
-if (import.meta.env.DEV) window.__socket = socket // TEMP: demo uchun
+if (typeof import.meta !== 'undefined' && import.meta.env?.DEV && typeof window !== 'undefined') {
+  window.__socket = socket // TEMP: demo uchun
+}

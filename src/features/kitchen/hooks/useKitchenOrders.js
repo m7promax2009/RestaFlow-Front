@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { socket, connectSocket, disconnectSocket } from '../../../services/socket'
-import { fetchKitchenOrders, updateOrderStatus, normalizeKitchenOrder } from '../api'
+import {
+  fetchKitchenOrders,
+  updateOrderStatus,
+  updateOrderItemStatus,
+  normalizeKitchenOrder,
+} from '../api'
 import { ORDER_STATUS } from '../../../constants/roles'
 import { playNotificationSound } from '../../../utils/sound'
 
@@ -33,7 +38,42 @@ export function useKitchenOrders() {
     })
   }, [])
 
-  // Boshlang'ich yuklash
+  // Socket: Har bir taom holati o'zgarganda Real-time yangilash (Multi-cook sync)
+  const handleItemUpdated = useCallback(
+    (data) => {
+      if (!data) return
+      // To'liq order ob'ekti kelgan bo'lsa
+      if (data.order && data.order.id) {
+        upsertOrder(data.order)
+        return
+      }
+      const targetOrderId = data.orderId || data.id
+      const targetItemKey = data.itemId ?? data.itemIndex ?? data.itemIndexOrId
+
+      if (targetOrderId && targetItemKey !== undefined) {
+        setOrders((prev) =>
+          prev.map((o) => {
+            if (o.id !== targetOrderId) return o
+            const updatedItems = o.items.map((item, idx) => {
+              const matches =
+                item.id === targetItemKey ||
+                idx === targetItemKey ||
+                idx === Number(targetItemKey)
+              return matches
+                ? { ...item, isReady: data.isReady !== undefined ? Boolean(data.isReady) : !item.isReady }
+                : item
+            })
+            return { ...o, items: updatedItems }
+          }),
+        )
+      } else if (targetOrderId) {
+        reloadOrders()
+      }
+    },
+    [upsertOrder, reloadOrders],
+  )
+
+  // Boshlang'ich yuklash (Status filtri bilan)
   useEffect(() => {
     let cancelled = false
 
@@ -55,7 +95,6 @@ export function useKitchenOrders() {
 
   // Socket.io real-time ulanish
   useEffect(() => {
-
     const token = window.localStorage.getItem('accessToken')
     connectSocket(token)
 
@@ -80,35 +119,95 @@ export function useKitchenOrders() {
     socket.on('order:statusChanged', handleStatusChanged)
     socket.on('order:status_changed', handleStatusChanged)
 
+    // Taom check-off socket eventlari
+    socket.on('order:item_updated', handleItemUpdated)
+    socket.on('order:itemUpdated', handleItemUpdated)
+    socket.on('order:itemStatusChanged', handleItemUpdated)
+
     return () => {
       socket.off('connect', handleConnect)
       socket.off('disconnect', handleDisconnect)
       socket.off('connect_error', handleDisconnect)
       socket.off('order:new', handleNewOrder)
-      socket.off('kitchen:new_order', reloadOrders)
+      socket.off('kitchen:new_order', handleNewOrder)
       socket.off('order:statusChanged', handleStatusChanged)
       socket.off('order:status_changed', handleStatusChanged)
-    }
-  }, [upsertOrder, reloadOrders])
 
+      socket.off('order:item_updated', handleItemUpdated)
+      socket.off('order:itemUpdated', handleItemUpdated)
+      socket.off('order:itemStatusChanged', handleItemUpdated)
+    }
+  }, [upsertOrder, reloadOrders, handleItemUpdated])
+
+  // Buyurtma statusini yangilash (Optimistik + Rollback)
   const setStatus = useCallback(
     async (orderId, status) => {
-      // Optimistik yangilanish — UI darhol javob beradi.
-      setOrders((prev) =>
-        status === ORDER_STATUS.SERVED
+      let snapshotState
+      // 1. Optimistik yangilanish (onMutate)
+      setOrders((prev) => {
+        snapshotState = prev
+        return status === ORDER_STATUS.SERVED
           ? prev.filter((o) => o.id !== orderId)
-          : prev.map((o) => (o.id === orderId ? { ...o, status } : o)),
-      )
+          : prev.map((o) => (o.id === orderId ? { ...o, status } : o))
+      })
 
       try {
         socket.emit('order:updateStatus', { orderId, status })
         await updateOrderStatus(orderId, status)
-      } catch {
-        // Xatolik bo'lsa — real holatni qayta yuklash
-        await reloadOrders()
+      } catch (err) {
+        // 2. Xatolik bo'lsa eski holatga qaytarish (onError / Rollback)
+        if (snapshotState) {
+          setOrders(snapshotState)
+        }
+        toast.error("Statusni yangilab bo'lmadi")
       }
     },
-    [reloadOrders],
+    [],
+  )
+
+  // Taomni alohida belgilash / check-off (Optimistik + Rollback + Socket sync)
+  const toggleItemReady = useCallback(
+    async (orderId, itemIndexOrId, targetIsReady) => {
+      let snapshotState
+      // 1. Optimistik yangilanish (onMutate)
+      setOrders((prev) => {
+        snapshotState = prev
+        return prev.map((order) => {
+          if (order.id !== orderId) return order
+          const updatedItems = order.items.map((item, idx) => {
+            const matches =
+              item.id === itemIndexOrId ||
+              idx === itemIndexOrId ||
+              idx === Number(itemIndexOrId)
+            return matches ? { ...item, isReady: targetIsReady } : item
+          })
+          return { ...order, items: updatedItems }
+        })
+      })
+
+      try {
+        // Socket event orqali boshqa oshpazlar ekranini real-time yangilash
+        socket.emit('order:updateItemStatus', {
+          orderId,
+          itemId: itemIndexOrId,
+          isReady: targetIsReady,
+        })
+        socket.emit('order:item_updated', {
+          orderId,
+          itemId: itemIndexOrId,
+          isReady: targetIsReady,
+        })
+
+        await updateOrderItemStatus(orderId, itemIndexOrId, targetIsReady)
+      } catch (err) {
+        // 2. Xatolik bo'lsa eski holatga qaytarish (onError / Rollback)
+        if (snapshotState) {
+          setOrders(snapshotState)
+        }
+        toast.error("Taom holatini saqlashda xatolik yuz berdi")
+      }
+    },
+    [],
   )
 
   const columns = {
@@ -117,5 +216,5 @@ export function useKitchenOrders() {
     ready: orders.filter((o) => o.status === ORDER_STATUS.READY),
   }
 
-  return { columns, connection, setStatus }
+  return { columns, connection, setStatus, toggleItemReady }
 }
