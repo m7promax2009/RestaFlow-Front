@@ -43,14 +43,8 @@ export async function updateOrderStatus(orderId, status) {
   return res.data?.data
 }
 
-// Taom check-off uchun: PATCH /orders/{orderId}/items/{itemId} body: { isReady }
-export async function updateOrderItemStatus(orderId, itemIndexOrId, isReady) {
-  try {
-    const res = await api.patch(`/orders/${orderId}/items/${itemIndexOrId}`, { isReady })
-    return res.data?.data
-  } catch {
-    // Fallback URL if endpoint differs
-    const res = await api.patch(`/orders/${orderId}`, { itemStatus: { itemIndexOrId, isReady } })
-    return res.data?.data
-  }
+// Taom check-off uchun Zulfiqor backend kontrakti: PATCH /orders/:id/items/:itemId  body: { isReady: boolean }
+export async function updateOrderItemStatus(orderId, itemId, isReady) {
+  const res = await api.patch(`/orders/${orderId}/items/${itemId}`, { isReady })
+  return res.data?.data
 }
