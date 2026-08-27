@@ -11,7 +11,14 @@ const DOT_COLOR = {
   complete: 'bg-emerald-500',
 }
 
-export default function KitchenColumn({ id, orders, isLoading, onStartPreparing, onMarkReady }) {
+export default function KitchenColumn({
+  id,
+  orders,
+  isLoading,
+  onStartPreparing,
+  onMarkReady,
+  onToggleItemReady,
+}) {
   const { t } = useTranslation()
 
   const totalOrders = orders.length
@@ -56,6 +63,7 @@ export default function KitchenColumn({ id, orders, isLoading, onStartPreparing,
               order={order}
               onStartPreparing={onStartPreparing}
               onMarkReady={onMarkReady}
+              onToggleItemReady={onToggleItemReady}
             />
           ))}
         </ul>

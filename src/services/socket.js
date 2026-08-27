@@ -3,7 +3,9 @@
 import { io } from 'socket.io-client'
 
 // Dev'da Vite proxy'si HTTP so'rovlari bilan birga socket'ni ham uzatadi.
-const URL = import.meta.env.VITE_SOCKET_URL || (import.meta.env.DEV ? window.location.origin : 'https://backend-production-109c0.up.railway.app')
+const rawSocketUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SOCKET_URL : undefined
+const isDev = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.DEV)
+const URL = rawSocketUrl || (isDev && typeof window !== 'undefined' ? window.location.origin : 'https://backend-production-109c0.up.railway.app')
 
 export const socket = io(URL, {
   autoConnect: false,
@@ -27,4 +29,6 @@ export const connectSocket = (token) => {
 
 export const disconnectSocket = () => socket.disconnect()
 
-if (import.meta.env.DEV) window.__socket = socket // TEMP: demo uchun
+if (typeof import.meta !== 'undefined' && import.meta.env?.DEV && typeof window !== 'undefined') {
+  window.__socket = socket // TEMP: demo uchun
+}
