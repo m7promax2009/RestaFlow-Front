@@ -93,6 +93,14 @@ export function useKitchenOrders() {
     }
   }, [])
 
+  // Zaxira polling kanali: 2 daqiqada (120,000 ms) bir marta ma'lumotlarni fonga chaqiradi
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      reloadOrders()
+    }, 120000)
+    return () => clearInterval(intervalId)
+  }, [reloadOrders])
+
   // Socket.io real-time ulanish
   useEffect(() => {
     const token = window.localStorage.getItem('accessToken')

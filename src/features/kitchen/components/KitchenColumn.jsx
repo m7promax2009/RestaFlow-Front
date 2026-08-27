@@ -1,12 +1,12 @@
 // Bitta ustun (Kutilmoqda / Tayyorlanmoqda / Tayyor).
-// Mas'ul: Ziyodulla & Team.
+// Premium Orange brend dizayn sistemasi.
 import { useTranslation } from 'react-i18next'
 import OrderTicket from './OrderTicket'
 
 const DOT_COLOR = {
-  pending: 'bg-leaf',
-  preparing: 'bg-amber',
-  ready: 'bg-mint',
+  pending: 'bg-[#F97316] shadow-[0_0_8px_rgba(249,115,22,0.6)]',
+  preparing: 'bg-[#FBBF24] shadow-[0_0_8px_rgba(251,191,36,0.6)]',
+  ready: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]',
 }
 
 export default function KitchenColumn({
@@ -30,25 +30,27 @@ export default function KitchenColumn({
   )
 
   return (
-    <div className="flex w-[85vw] shrink-0 flex-col rounded-2xl bg-paper-2/60 p-3 dark:bg-ink-2 sm:w-full sm:min-w-0">
-      <div className="mb-3 flex items-center justify-between gap-2 px-1">
-        <div className="flex items-center gap-2">
-          <span className={`size-2.5 rounded-full ${DOT_COLOR[id]}`} />
-          <h3 className="font-display text-base tracking-wide text-charcoal dark:text-fog">
+    <div className="flex w-[85vw] shrink-0 flex-col rounded-3xl bg-white/70 p-4 border border-[#E5E7EB] shadow-[0_10px_30px_rgba(0,0,0,0.04)] backdrop-blur-md dark:bg-[#1F2937]/70 dark:border-gray-800 sm:w-full sm:min-w-0 transition-all">
+      <div className="mb-4 flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2.5">
+          <span className={`size-3 rounded-full ${DOT_COLOR[id]}`} />
+          <h3 className="font-display text-base font-bold text-[#111827] dark:text-gray-100">
             {t(`kitchen.columns.${id}`)}
           </h3>
         </div>
-        <span className="rounded-full bg-black/5 px-2.5 py-0.5 font-mono text-xs font-medium text-slate dark:bg-white/5 shrink-0">
+        <span className="shrink-0 rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 font-mono text-xs font-semibold text-[#F97316] dark:bg-orange-500/20 dark:text-orange-300">
           {totalOrders} ta buyurtma · {totalDishes} ta taom
         </span>
       </div>
 
       {orders.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-black/10 p-6 text-center text-sm text-slate dark:border-ink-border">
-          {t(`kitchen.empty.${id}`)}
-        </p>
+        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#E5E7EB] py-10 text-center dark:border-gray-800">
+          <p className="text-xs font-medium text-[#6B7280] dark:text-gray-400">
+            {t(`kitchen.empty.${id}`)}
+          </p>
+        </div>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col gap-4">
           {orders.map((order) => (
             <OrderTicket
               key={order.id}
