@@ -159,7 +159,7 @@ export default function AppLayout() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs transition-all hover:bg-orange-50 hover:text-[#F97316] hover:scale-105 active:scale-95 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
               title={theme === 'dark' ? "Yorqin (oq) rejimga o'tish" : "Tungi (qorong'u) rejimga o'tish"}
               aria-label="Mavzuni almashtirish"
             >

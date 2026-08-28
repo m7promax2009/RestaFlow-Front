@@ -96,7 +96,7 @@ export default function RegisterPage() {
   return (
     <>
       <style>{animationStyles}</style>
-      <div className="flex h-screen w-full overflow-hidden bg-[#FFFDF9] font-sans">
+      <div className="flex h-screen w-full overflow-hidden bg-[#FFFDF9] dark:bg-[#0B0F17] font-sans">
 
         {/* LEFT HERO SECTION */}
         <div className="relative hidden w-[45%] lg:flex lg:flex-col lg:justify-between overflow-hidden">
@@ -188,11 +188,11 @@ export default function RegisterPage() {
         {/* RIGHT REGISTER CARD */}
         <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
           <div
-            className="w-full max-w-[440px] rounded-[32px] bg-white p-12 shadow-[0_25px_80px_rgba(0,0,0,0.08)]"
+            className="w-full max-w-[440px] rounded-[32px] bg-white dark:bg-[#1F2937] p-12 shadow-[0_25px_80px_rgba(0,0,0,0.08)]"
             style={{ animation: 'fadeInUp 0.8s ease-out 0.3s both' }}
           >
             {/* Tab */}
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-4 mb-8">
+            <div className="flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-4 mb-8">
               <div className="flex items-center gap-2 text-[#F97316]">
                 <UserPlusIcon />
                 <span className="text-lg font-bold">Ro'yxatdan o'tish</span>
@@ -201,10 +201,10 @@ export default function RegisterPage() {
 
             {/* Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-[#111827]">
+              <h2 className="text-2xl font-bold text-[#111827] dark:text-white">
                 Yangi hisob yarating
               </h2>
-              <p className="mt-2 text-sm text-[#6B7280]">
+              <p className="mt-2 text-sm text-[#6B7280] dark:text-gray-400">
                 Malumotlarni kiriting va restoraningizni boshqarishni boshlang.
               </p>
             </div>
@@ -212,7 +212,7 @@ export default function RegisterPage() {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="name">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="name">
                   Ism
                 </label>
                 <div className="relative">
@@ -222,7 +222,7 @@ export default function RegisterPage() {
                     type="text"
                     autoComplete="name"
                     placeholder="Ismingizni kiriting"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-4 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-4 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('name')}
                   />
                 </div>
@@ -230,7 +230,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="register-email">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="register-email">
                   Email
                 </label>
                 <div className="relative">
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                     type="email"
                     autoComplete="email"
                     placeholder="email@misol.uz"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-4 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-4 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('email')}
                   />
                 </div>
@@ -248,7 +248,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="register-password">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="register-password">
                   Parol
                 </label>
                 <div className="relative">
@@ -258,7 +258,7 @@ export default function RegisterPage() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     placeholder="********"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-11 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-11 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('password')}
                   />
                   <button
@@ -284,7 +284,7 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="confirm-password">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="confirm-password">
                   Parolni tasdiqlang
                 </label>
                 <div className="relative">
@@ -294,7 +294,7 @@ export default function RegisterPage() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="new-password"
                     placeholder="********"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-4 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-4 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('confirmPassword')}
                   />
                 </div>
@@ -302,7 +302,7 @@ export default function RegisterPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                   {error}
                 </div>
               )}
@@ -325,7 +325,7 @@ export default function RegisterPage() {
               </button>
             </form>
 
-            <p className="mt-8 text-center text-sm text-[#6B7280]">
+            <p className="mt-8 text-center text-sm text-[#6B7280] dark:text-gray-400">
               Hisobingiz bormi?{' '}
               <Link to="/login" className="font-semibold text-[#F97316] hover:text-orange-600 transition-colors">
                 Kirish

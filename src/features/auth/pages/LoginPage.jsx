@@ -103,7 +103,7 @@ export default function LoginPage() {
   return (
     <>
       <style>{animationStyles}</style>
-      <div className="flex h-screen w-full overflow-hidden bg-[#FFFDF9] font-sans">
+      <div className="flex h-screen w-full overflow-hidden bg-[#FFFDF9] dark:bg-[#0B0F17] font-sans">
 
         {/* LEFT HERO SECTION */}
         <div className="relative hidden w-[45%] lg:flex lg:flex-col lg:justify-between overflow-hidden">
@@ -190,11 +190,11 @@ export default function LoginPage() {
         {/* RIGHT LOGIN CARD */}
         <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
           <div
-            className="w-full max-w-[440px] rounded-[32px] bg-white p-12 shadow-[0_25px_80px_rgba(0,0,0,0.08)]"
+            className="w-full max-w-[440px] rounded-[32px] bg-white dark:bg-[#1F2937] p-12 shadow-[0_25px_80px_rgba(0,0,0,0.08)]"
             style={{ animation: 'fadeInUp 0.8s ease-out 0.3s both' }}
           >
             {/* Tab */}
-            <div className="flex items-center gap-2 border-b border-gray-100 pb-4 mb-8">
+            <div className="flex items-center gap-2 border-b border-gray-100 dark:border-gray-700 pb-4 mb-8">
               <div className="flex items-center gap-2 text-[#F97316]">
                 <ShieldIcon />
                 <span className="text-lg font-bold">Kirish</span>
@@ -203,10 +203,10 @@ export default function LoginPage() {
 
             {/* Header */}
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-[#111827]">
+              <h2 className="text-2xl font-bold text-[#111827] dark:text-white">
                 Xush kelibsiz qaytganingizdan xursandmiz!
               </h2>
-              <p className="mt-2 text-sm text-[#6B7280]">
+              <p className="mt-2 text-sm text-[#6B7280] dark:text-gray-400">
                 Hisobingizga kiring va ishni davom ettiring.
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function LoginPage() {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="email">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="email">
                   Email
                 </label>
                 <div className="relative">
@@ -224,7 +224,7 @@ export default function LoginPage() {
                     type="email"
                     autoComplete="email"
                     placeholder="email@misol.uz"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-4 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-4 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('email')}
                   />
                 </div>
@@ -232,7 +232,7 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-[#111827]" htmlFor="password">
+                <label className="mb-1.5 block text-sm font-medium text-[#111827] dark:text-gray-200" htmlFor="password">
                   Parol
                 </label>
                 <div className="relative">
@@ -242,7 +242,7 @@ export default function LoginPage() {
                     type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="********"
-                    className="w-full rounded-xl border border-[#E5E7EB] bg-[#FFFDF9] py-3 pl-11 pr-11 text-sm text-[#111827] placeholder-gray-400 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
+                    className="w-full rounded-xl border border-[#E5E7EB] dark:border-gray-600 bg-[#FFFDF9] dark:bg-gray-700 py-3 pl-11 pr-11 text-sm text-[#111827] dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none transition-all focus:border-[#F97316] focus:ring-4 focus:ring-orange-100"
                     {...register('password')}
                   />
                   <button
@@ -265,7 +265,7 @@ export default function LoginPage() {
                     onChange={(e) => setRemember(e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300 text-[#F97316] focus:ring-[#F97316] cursor-pointer accent-[#F97316]"
                   />
-                  <span className="text-sm text-[#6B7280]">Meni eslab qolish</span>
+                  <span className="text-sm text-[#6B7280] dark:text-gray-400">Meni eslab qolish</span>
                 </label>
                 <Link
                   to="/forgot-password"
@@ -276,7 +276,7 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <div className="rounded-xl border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/50 px-4 py-3 text-sm text-red-600 dark:text-red-400">
                   {error}
                 </div>
               )}
@@ -299,7 +299,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <p className="mt-8 text-center text-sm text-[#6B7280]">
+            <p className="mt-8 text-center text-sm text-[#6B7280] dark:text-gray-400">
               Hisobingiz yo'qmi?{' '}
               <Link to="/register" className="font-semibold text-[#F97316] hover:text-orange-600 transition-colors">
                 Ro'yxatdan o'ting
