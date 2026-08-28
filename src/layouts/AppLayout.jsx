@@ -1,9 +1,9 @@
 // Ilova qobig'i — sidebar (rolga qarab filtrlangan), topbar va kontent.
-// Premium Orange brend dizayn sistemasi.
+// Premium Orange brend dizayn sistemasi + Light/Dark rejim knopkasi.
 import { useEffect, useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { Bell, LogOut, Menu, User, X, UtensilsCrossed } from 'lucide-react'
+import { Bell, LogOut, Menu, User, X, UtensilsCrossed, Sun, Moon } from 'lucide-react'
 
 import { clearCredentials } from '../features/auth/authSlice'
 import { clearSession } from '../features/auth/session'
@@ -11,12 +11,14 @@ import { navItemsForRole } from '../constants/navigation'
 import { ROLE_LABELS } from '../constants/roles'
 import { useNotificationsSocket } from '../features/notifications'
 import { useAuthSync } from '../hooks/useAuthSync'
+import { useTheme } from '../hooks/useTheme'
 import { disconnectSocket } from '../services/socket'
 
 export default function AppLayout() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
+  const { theme, toggleTheme } = useTheme()
 
   const user = useSelector((state) => state.auth.user)
   const notifications = useSelector((state) => state.notifications.items)
@@ -151,6 +153,21 @@ export default function AppLayout() {
           </span>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Theme Toggle Button (Light/Dark mode) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="rounded-xl p-2.5 text-gray-600 transition-all duration-300 hover:bg-orange-500/10 hover:text-[#F97316] hover:scale-110 hover:rotate-12 dark:text-gray-300 dark:hover:bg-gray-800 active:scale-90"
+              aria-label="Mavzuni almashtirish"
+              title={theme === 'dark' ? "Yorug' rejimga o'tish" : "Tungi rejimga o'tish"}
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-amber-400 transition-transform duration-300" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300 transition-transform duration-300" />
+              )}
+            </button>
+
             <NavLink
               to="/notifications"
               className="relative rounded-xl p-2.5 text-gray-600 transition-colors hover:bg-orange-500/10 hover:text-[#F97316] dark:text-gray-300 dark:hover:bg-gray-800"

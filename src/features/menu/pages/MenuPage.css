@@ -1702,3 +1702,417 @@
 .preview-modal-close-btn:hover {
   background: #6A1B25;
 }
+
+/* ===== DARK MODE ===== */
+
+.dark .menu-page,
+.dark .menu-header-title,
+.dark .menu-header-crumb,
+.dark .menu-header-search input,
+.dark .menu-header-filter-btn,
+.dark .menu-header-filter-btn:hover,
+.dark .menu-header-notif,
+.dark .menu-header-notif:hover,
+.dark .menu-header-notif:hover .menu-header-notif-icon,
+.dark .menu-header-notif-icon,
+.dark .menu-header-date,
+.dark .menu-header-date:hover,
+.dark .menu-header-date-icon,
+.dark .menu-header-date-chevron,
+.dark .menu-stat-card,
+.dark .menu-stat-label,
+.dark .menu-stat-text strong,
+.dark .menu-stat-detail,
+.dark .dish-card,
+.dark .dish-card:hover,
+.dark .dish-card-image,
+.dark .dish-card-title,
+.dark .dish-card-desc,
+.dark .dish-card-category,
+.dark .dish-card-price,
+.dark .dish-card-action-btn,
+.dark .dish-card-action-btn:hover,
+.dark .dish-card-edit-btn,
+.dark .dish-card-edit-btn:hover,
+.dark .dish-card-dropdown,
+.dark .dish-card-dropdown button,
+.dark .dish-card-dropdown button:hover,
+.dark .dish-card-dropdown-divider,
+.dark .dish-page-btn,
+.dark .dish-page-btn:hover:not(.active):not(:disabled),
+.dark .dish-page-dots,
+.dark .dish-pagination-caption,
+.dark .menu-empty-hint,
+.dark .btn-ghost,
+.dark .btn-ghost:hover,
+.dark .menu-form label,
+.dark .category-modal,
+.dark .product-modal,
+.dark .preview-modal,
+.dark .category-modal-title,
+.dark .product-modal-title,
+.dark .preview-modal-title,
+.dark .category-modal-close,
+.dark .product-modal-close,
+.dark .category-modal-cancel-btn,
+.dark .product-modal-cancel-btn,
+.dark .preview-modal-edit-btn,
+.dark .category-modal-icon-btn,
+.dark .category-modal-icon-btn:hover,
+.dark .category-modal-cancel-btn:hover,
+.dark .product-modal-cancel-btn:hover,
+.dark .preview-modal-edit-btn:hover,
+.dark .category-modal-color-dot.active,
+.dark .product-modal-photo-main,
+.dark .product-modal-photo-slot,
+.dark .product-modal-chip,
+.dark .product-modal-chip:hover,
+.dark .product-photo-upload,
+.dark .preview-modal-content,
+.dark .preview-modal-chip,
+.dark .Toastify__toast,
+.dark .Toastify__toast-body,
+.dark .Toastify__close-button {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+.dark .menu-page {
+  background: linear-gradient(180deg, #111827 0%, #0B0F17 100%);
+}
+
+.dark .menu-header-title {
+  color: #F3F4F6;
+}
+
+.dark .menu-header-crumb {
+  color: #6B7280;
+}
+
+.dark .menu-header-search input {
+  background: #1F2937;
+  color: #F3F4F6;
+  border-color: #374151;
+}
+
+.dark .menu-header-search input::placeholder {
+  color: #6B7280;
+}
+
+.dark .menu-header-filter-btn {
+  background: #1F2937;
+  color: #F9A8D4;
+  border-color: #374151;
+}
+
+.dark .menu-header-filter-btn:hover {
+  background: #374151;
+}
+
+.dark .menu-header-notif {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark .menu-header-notif:hover {
+  background: #374151;
+}
+
+.dark .menu-header-notif:hover .menu-header-notif-icon {
+  color: #F97316;
+}
+
+.dark .menu-header-notif-icon {
+  color: #9CA3AF;
+}
+
+.dark .menu-header-notif-dot {
+  box-shadow: 0 0 0 2px #1F2937;
+}
+
+.dark .menu-header-date {
+  background: #1F2937;
+  color: #F3F4F6;
+  border-color: #374151;
+}
+
+.dark .menu-header-date:hover {
+  background: #374151;
+}
+
+.dark .menu-header-date-icon,
+.dark .menu-header-date-chevron {
+  color: #F3F4F6;
+}
+
+.dark .menu-stat-card {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark .menu-stat-label {
+  color: #9CA3AF;
+}
+
+.dark .menu-stat-text strong {
+  color: #F3F4F6;
+}
+
+.dark .menu-stat-detail {
+  color: #6B7280;
+}
+
+.dark .dish-card {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark .dish-card:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.dark .dish-card-image {
+  background: #111827;
+}
+
+.dark .dish-card-title {
+  color: #F3F4F6;
+}
+
+.dark .dish-card-desc {
+  color: #9CA3AF;
+}
+
+.dark .dish-card-category {
+  color: #6B7280;
+}
+
+.dark .dish-card-price {
+  color: #F3F4F6;
+}
+
+.dark .dish-card-action-btn {
+  background: #374151;
+  color: #D1D5DB;
+}
+
+.dark .dish-card-action-btn:hover {
+  background: #4B5563;
+}
+
+.dark .dish-card-edit-btn {
+  background: rgba(249, 115, 22, 0.15);
+  color: #F97316;
+}
+
+.dark .dish-card-edit-btn:hover {
+  background: rgba(249, 115, 22, 0.25);
+}
+
+.dark .dish-card-dropdown {
+  background: #1F2937;
+  border-color: #374151;
+}
+
+.dark .dish-card-dropdown button {
+  color: #E5E7EB;
+}
+
+.dark .dish-card-dropdown button:hover {
+  background: #374151;
+}
+
+.dark .dish-card-dropdown-divider {
+  background: #374151;
+}
+
+.dark .dish-page-btn {
+  background: #374151;
+  color: #D1D5DB;
+}
+
+.dark .dish-page-btn:hover:not(.active):not(:disabled) {
+  background: #4B5563;
+}
+
+.dark .dish-page-dots {
+  color: #6B7280;
+}
+
+.dark .dish-pagination-caption {
+  color: #6B7280;
+}
+
+.dark .menu-empty-hint {
+  color: #6B7280;
+}
+
+.dark .btn-ghost {
+  background: #1F2937;
+  color: #D1D5DB;
+}
+
+.dark .btn-ghost:hover {
+  background: #374151;
+}
+
+.dark .menu-form label {
+  color: #E5E7EB;
+}
+
+.dark .menu-form input[type='text'],
+.dark .menu-form input[type='number'],
+.dark .menu-form select,
+.dark .menu-form textarea {
+  background: #1F2937;
+  border-color: #374151;
+  color: #F3F4F6;
+}
+
+.dark .confirm-message {
+  color: #E5E7EB;
+}
+
+.dark .category-modal,
+.dark .product-modal,
+.dark .preview-modal {
+  background: #1F2937;
+}
+
+.dark .category-modal-title,
+.dark .product-modal-title,
+.dark .preview-modal-title {
+  color: #F3F4F6;
+}
+
+.dark .category-modal-close,
+.dark .product-modal-close,
+.dark .preview-modal-close {
+  color: #9CA3AF;
+}
+
+.dark .category-modal-close:hover,
+.dark .product-modal-close:hover {
+  background: #374151;
+}
+
+.dark .category-modal-subtitle,
+.dark .category-modal-label,
+.dark .category-modal-hint,
+.dark .category-modal-counter,
+.dark .product-modal-section-title,
+.dark .product-modal-field label,
+.dark .product-modal-counter,
+.dark .product-modal-hint,
+.dark .product-modal-checkbox em,
+.dark .product-modal-checkbox,
+.dark .preview-modal-category,
+.dark .preview-modal-desc,
+.dark .preview-modal-spec,
+.dark .preview-modal-chip {
+  color: #D1D5DB;
+}
+
+.dark .category-modal-field input,
+.dark .category-modal-field textarea,
+.dark .product-modal-field input,
+.dark .product-modal-field select,
+.dark .product-modal-field textarea {
+  background: #111827;
+  border-color: #374151;
+  color: #F3F4F6;
+}
+
+.dark .category-modal-field input::placeholder,
+.dark .category-modal-field textarea::placeholder,
+.dark .product-modal-field input::placeholder,
+.dark .product-modal-field textarea::placeholder {
+  color: #6B7280;
+}
+
+.dark .category-modal-cancel-btn,
+.dark .product-modal-cancel-btn,
+.dark .preview-modal-edit-btn {
+  background: #374151;
+  color: #E5E7EB;
+}
+
+.dark .category-modal-cancel-btn:hover,
+.dark .product-modal-cancel-btn:hover,
+.dark .preview-modal-edit-btn:hover {
+  background: #4B5563;
+}
+
+.dark .category-modal-icon-btn {
+  background: #111827;
+  border-color: #374151;
+  color: #9CA3AF;
+}
+
+.dark .category-modal-icon-btn:hover {
+  background: #374151;
+}
+
+.dark .category-modal-icon-btn.active {
+  border-color: #F97316;
+  background: rgba(249, 115, 22, 0.15);
+  color: #F97316;
+}
+
+.dark .category-modal-color-dot.active {
+  outline-color: #F97316;
+}
+
+.dark .product-modal-photo-main {
+  background: #111827;
+  border-color: #374151;
+}
+
+.dark .product-modal-photo-slot {
+  background: #111827;
+  border-color: #374151;
+}
+
+.dark .product-modal-chip {
+  background: #374151;
+  color: #E5E7EB;
+}
+
+.dark .product-modal-chip:hover {
+  background: #4B5563;
+}
+
+.dark .product-modal-chip.active {
+  background: rgba(249, 115, 22, 0.15);
+  color: #F97316;
+}
+
+.dark .product-photo-upload {
+  background: #111827;
+  border-color: #374151;
+}
+
+.dark .preview-modal-content {
+  background: #1F2937;
+}
+
+.dark .preview-modal-badge.inactive {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.dark .preview-modal-chip {
+  background: #374151;
+}
+
+.dark .Toastify__toast {
+  background: #1F2937;
+  border-color: #374151;
+  color: #F3F4F6;
+}
+
+.dark .Toastify__toast-body {
+  color: #F3F4F6;
+}
+
+.dark .Toastify__close-button {
+  color: #6B7280;
+}
