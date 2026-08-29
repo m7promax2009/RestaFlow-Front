@@ -87,21 +87,21 @@ export default function ShiftPanel({ onShiftChange }) {
   const isOpen = shift && shift.status === 'open'
 
   const handleOpen = () => {
-    const balance = openingBalance ? Number(openingBalance) : 0
-    if (openingBalance && (!Number.isFinite(balance) || balance < 0)) {
+    const balance = openingBalance.trim() !== '' ? Number(openingBalance) : 0
+    if (!Number.isFinite(balance) || balance < 0) {
       toast.error("Boshlang'ich balans manfiy bo'lishi mumkin emas")
       return
     }
-    openMutation.mutate({ openingBalance: balance })
+    openMutation.mutate({ startCash: balance, openingBalance: balance })
   }
 
   const handleClose = () => {
-    const balance = Number(closingBalance)
+    const balance = closingBalance.trim() !== '' ? Number(closingBalance) : 0
     if (!Number.isFinite(balance) || balance < 0) {
       toast.error("Yakuniy balans manfiy bo'lishi mumkin emas")
       return
     }
-    closeMutation.mutate({ closingBalance: balance })
+    closeMutation.mutate({ actualCash: balance, closingBalance: balance })
   }
 
   // Yuklanmoqda
@@ -240,12 +240,12 @@ export default function ShiftPanel({ onShiftChange }) {
               <ShiftStat
                 icon={Wallet}
                 label="Boshlang'ich"
-                value={formatSom(shift.openingBalance)}
+                value={formatSom(shift.openingBalance ?? shift.startCash ?? 0)}
               />
               <ShiftStat
                 icon={Banknote}
                 label="Umumiy tushum"
-                value={formatSom(shift.totalIncome ?? 0)}
+                value={formatSom(shift.totalIncome ?? shift.totalRevenue ?? 0)}
               />
               <ShiftStat
                 icon={Clock}
@@ -254,9 +254,9 @@ export default function ShiftPanel({ onShiftChange }) {
               />
             </div>
 
-            {shift.user && (
+            {(shift.user || shift.cashier) && (
               <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
-                Kassir: {shift.user.name ?? shift.user.username ?? '—'}
+                Kassir: {(shift.user || shift.cashier)?.name ?? (shift.user || shift.cashier)?.username ?? '—'}
               </p>
             )}
 

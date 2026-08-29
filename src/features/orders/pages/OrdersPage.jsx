@@ -34,7 +34,7 @@ export default function OrdersPage() {
 
   const canTransfer = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER].includes(role)
   const canCancel = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER, ROLES.CASHIER].includes(role)
-  const canDelete = [ROLES.ADMIN, ROLES.MANAGER].includes(role)
+  const canDelete = [ROLES.ADMIN, ROLES.MANAGER, ROLES.WAITER].includes(role)
 
   const params = useMemo(() => {
     const p = { page, limit: PAGE_SIZE }

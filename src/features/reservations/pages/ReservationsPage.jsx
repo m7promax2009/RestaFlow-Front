@@ -26,33 +26,40 @@ import {
   Badge,
   Button,
   Card,
+  DateSelect,
   EmptyState,
   Input,
   Modal,
   PageHeader,
-  Select,
+  TableSelect,
   Skeleton,
 } from '../../../components/ui'
+
+const today = () => new Date().toLocaleDateString('en-CA')
 
 const EMPTY_FORM = {
   customerName: '',
   customerPhone: '',
   table: '',
-  date: '',
+  date: today(),
+  time: '19:00',
   guests: 2,
   notes: '',
   status: RESERVATION_STATUS.PENDING,
 }
 
-const formatLocalDatetime = (value) => {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  const tzOffsetMs = date.getTimezoneOffset() * 60_000
-  return new Date(date.getTime() - tzOffsetMs).toISOString().slice(0, 16)
+// datetime-local yoki ISO date → { date: 'YYYY-MM-DD', time: 'HH:MM' }
+function splitDateTime(value) {
+  if (!value) return { date: today(), time: '19:00' }
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return { date: today(), time: '19:00' }
+  const tz = d.getTimezoneOffset() * 60_000
+  const local = new Date(d.getTime() - tz)
+  return {
+    date: local.toISOString().slice(0, 10),
+    time: local.toISOString().slice(11, 16),
+  }
 }
-
-const today = () => new Date().toLocaleDateString('en-CA')
 
 export default function ReservationsPage() {
   const queryClient = useQueryClient()
@@ -70,15 +77,13 @@ export default function ReservationsPage() {
 
   const reservationsQuery = useQuery({
     queryKey: ['reservations', startDate, endDate],
-    queryFn: async () =>
-      unwrapList(
-        await getReservations({
-          limit: 100,
-          startDate: startDate || undefined,
-          endDate: endDate || undefined,
-        }),
-        'reservations',
-      ),
+    queryFn: async () => {
+      // Sana filterini to'g'ri yuborish: startDate → 00:00, endDate → 23:59
+      const params = { limit: 100 }
+      if (startDate) params.startDate = `${startDate}T00:00:00.000Z`
+      if (endDate) params.endDate = `${endDate}T23:59:59.999Z`
+      return unwrapList(await getReservations(params), 'reservations')
+    },
   })
   const tablesQuery = useQuery({
     queryKey: ['tables'],
@@ -92,15 +97,13 @@ export default function ReservationsPage() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
-      // DIQQAT: backend PUT /reservations/:id faqat status/date/guests/notes ni
-      // qabul qiladi (Backend/src/validations/reservation.validation.js). Mijoz
-      // ismi, telefoni va stolini yuborish foydasiz — Zod ularni jimgina tashlab
-      // yuboradi va "saqlandi" degan yolg'on taassurot qoladi. Shu sabab tahrirda
-      // faqat qo'llab-quvvatlanadigan maydonlar yuboriladi.
+      // Sana + vaqt → bitta ISO string (backend Date type qabul qiladi)
+      const isoDateTime = new Date(`${form.date}T${form.time}:00`).toISOString()
+
       if (editing) {
         return updateReservation(editing._id, {
           status: form.status,
-          date: new Date(form.date).toISOString(),
+          date: isoDateTime,
           guests: Number(form.guests),
           notes: form.notes.trim(),
         })
@@ -109,7 +112,7 @@ export default function ReservationsPage() {
         customerName: form.customerName.trim(),
         customerPhone: form.customerPhone.trim(),
         table: form.table,
-        date: new Date(form.date).toISOString(),
+        date: isoDateTime,
         guests: Number(form.guests),
         ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
       })
@@ -130,10 +133,10 @@ export default function ReservationsPage() {
         status: RESERVATION_STATUS.CONFIRMED,
         table: table._id ?? table.id,
       })
-      await updateTable(table._id ?? table.id, { status: TABLE_STATUS.RESERVED })
+      await updateTable(table._id ?? table.id, { status: TABLE_STATUS.BUSY })
     },
     onSuccess: () => {
-      toast.success('Bron tasdiqlandi va stol bron qilingan holatiga o‘tdi')
+      toast.success('Bron tasdiqlandi va stol band holatiga o‘tdi')
       setConfirming(null)
       setSelectedTable(null)
       invalidate()
@@ -189,6 +192,8 @@ export default function ReservationsPage() {
     },
     onSuccess: () => {
       toast.success("Barcha bronlar o'chirildi")
+      setStartDate(today())
+      setEndDate(today())
       invalidate()
     },
     onError: (error) => toast.error(apiErrorMessage(error, "Bronlarni o'chirib bo'lmadi")),
@@ -202,11 +207,13 @@ export default function ReservationsPage() {
 
   const openEdit = (reservation) => {
     setEditing(reservation)
+    const dt = splitDateTime(reservation.date)
     setForm({
       customerName: reservation.customerName ?? '',
       customerPhone: reservation.customerPhone ?? '',
       table: reservation.table?._id ?? reservation.table ?? '',
-      date: reservation.date ? formatLocalDatetime(reservation.date) : '',
+      date: dt.date,
+      time: dt.time,
       guests: reservation.guests ?? 2,
       notes: reservation.notes ?? '',
       status: reservation.status ?? RESERVATION_STATUS.PENDING,
@@ -223,7 +230,7 @@ export default function ReservationsPage() {
   const setField = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))
 
   const isValid =
-    form.customerName.trim() && form.customerPhone.trim() && form.table && form.date && form.guests > 0
+    form.customerName.trim() && form.customerPhone.trim() && form.table && form.date && form.time && form.guests > 0
 
   const reservations = reservationsQuery.data ?? []
 
@@ -241,7 +248,10 @@ export default function ReservationsPage() {
 
   const tableOptions = (tablesQuery.data ?? []).map((t) => ({
     value: t._id,
-    label: `Stol ${t.number} (${t.capacity} kishilik)`,
+    label: `Stol ${t.number} — ${t.capacity} kishilik`,
+    number: t.number,
+    capacity: t.capacity,
+    isVip: Boolean(t.location && /vip/i.test(t.location)),
   }))
   const selectableTables = (tablesQuery.data ?? []).map((table) => {
     const tableId = table._id ?? table.id
@@ -303,17 +313,13 @@ export default function ReservationsPage() {
             </label>
             <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
           </div>
-          {(startDate || endDate) && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setStartDate('')
-                setEndDate('')
-              }}
-            >
-              Tozalash
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            onClick={() => setConfirmAction({ type: 'clear_all' })}
+            disabled={clearAllMutation.isPending}
+          >
+            Tozalash
+          </Button>
         </div>
       </Card>
 
@@ -494,7 +500,7 @@ export default function ReservationsPage() {
             placeholder="+998 90 123 45 67"
             disabled={Boolean(editing)}
           />
-          <Select
+          <TableSelect
             label="Stol"
             placeholder="Stolni tanlang"
             value={form.table}
@@ -502,11 +508,12 @@ export default function ReservationsPage() {
             options={tableOptions}
             disabled={Boolean(editing)}
           />
-          <Input
+          <DateSelect
             label="Sana va vaqt"
-            type="datetime-local"
-            value={form.date}
-            onChange={setField('date')}
+            dateValue={form.date}
+            timeValue={form.time}
+            onDateChange={(v) => setForm((p) => ({ ...p, date: v }))}
+            onTimeChange={(v) => setForm((p) => ({ ...p, time: v }))}
           />
           <Input
             label="Mehmonlar soni"
