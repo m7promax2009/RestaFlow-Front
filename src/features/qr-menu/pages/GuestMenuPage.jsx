@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { FiUser } from 'react-icons/fi'
+import { User, UtensilsCrossed, Sparkles } from 'lucide-react'
 
 import {
   createGuestReservation,
@@ -54,7 +54,6 @@ export default function GuestMenuPage() {
     if (!slots.includes(time)) {
       setTime(slots[0] || '')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date])
 
   const isoDateTime = useMemo(() => {
@@ -81,11 +80,6 @@ export default function GuestMenuPage() {
   }, [fetchAvailability])
 
   useEffect(() => {
-    // Faqat "Zal" bosqichida ishlaydi — stol boshqa mehmon tomonidan band
-    // qilinsa, tanlovni tozalaydi. Bron allaqachon yuborilgandan keyin (menyu/
-    // tasdiqlash/muvaffaqiyat bosqichlarida) tables yangilanishi tanlangan
-    // stolni "yo'qotib qo'ymasligi" kerak — aks holda muvaffaqiyat ekranida
-    // stol raqami yo'qolib qoladi.
     if (step !== 'hall') return
     setSelectedTable((prev) => {
       if (!prev) return prev
@@ -152,9 +146,6 @@ export default function GuestMenuPage() {
       })
       const payload = res.data?.data ?? res.data
       setReservation(payload.reservation)
-      // Bron qilingan stolni darhol "band" deb belgilaymiz (server bilan ham
-      // fon rejimida qayta tekshiramiz) — aks holda foydalanuvchi "Yana bron
-      // qilish"ni bosganda o'sha stol hali ham bo'sh ko'rinib qolar edi.
       setTables((prev) =>
         prev.map((t) => (t._id === selectedTable._id ? { ...t, isReserved: true } : t))
       )
@@ -187,23 +178,32 @@ export default function GuestMenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#2a0e10_0%,#140708_100%)]">
-      <header className="border-b border-[#4a1616] bg-[#140708]/80 backdrop-blur">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <div>
-            <p className="text-lg font-extrabold tracking-tight text-[#D9A968]">RestoFlow</p>
-            <p className="text-xs text-[#9a8080]">Stol bron qilish</p>
+    <div className="min-h-screen bg-gradient-to-b from-[#0B0F17] via-[#0F172A] to-[#1E293B] text-slate-100">
+      <header className="border-b border-slate-800/80 bg-[#0B0F17]/90 backdrop-blur-md sticky top-0 z-40">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3.5 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#F97316] to-[#EA580C] text-white shadow-md shadow-orange-500/30">
+              <UtensilsCrossed size={18} />
+            </div>
+            <div>
+              <p className="text-lg font-black tracking-tight text-white">
+                Resto<span className="text-[#F97316]">Flow</span>
+              </p>
+              <p className="text-[11px] font-bold text-slate-400">Onlayn stol bron qilish</p>
+            </div>
           </div>
+
           <Link
             to="/login"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-[#cbbcbc] hover:bg-[#2a1315]"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-800 bg-slate-900/80 px-3.5 py-1.5 text-xs font-bold text-slate-300 hover:border-orange-500/50 hover:text-white transition-colors"
           >
-            <FiUser size={14} /> Xodim uchun kirish
+            <User size={14} className="text-[#F97316]" />
+            <span>Xodimlar kirishi</span>
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-4 py-6">
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
         {step !== 'success' && (
           <div className="mb-6">
             <StepHeader current={step} />

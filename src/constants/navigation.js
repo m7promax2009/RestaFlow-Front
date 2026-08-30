@@ -144,28 +144,7 @@ export function rolesForPath(path) {
  * @param {string} role
  * @returns {string}
  */
-export function resolveRedirect(from, role) {
-  const pathname = typeof from === 'string' ? from.split('?')[0].split('#')[0] : from?.pathname
-
-  if (
-    !pathname ||
-    pathname === '/' ||
-    pathname === '/403' ||
-    pathname.startsWith('/login') ||
-    pathname.startsWith('/register') ||
-    pathname.startsWith('/otp') ||
-    pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/reset-password')
-  ) {
-    return (role && ROLE_HOME[role]) ? ROLE_HOME[role] : '/'
-  }
-
-  const allowed = rolesForPath(pathname)
-  if (allowed.length > 0 && role && allowed.includes(role)) {
-    if (typeof from === 'string') return from
-    return `${from.pathname || ''}${from.search || ''}${from.hash || ''}`
-  }
-
+export function resolveRedirect(_from, role) {
   return (role && ROLE_HOME[role]) ? ROLE_HOME[role] : '/'
 }
 

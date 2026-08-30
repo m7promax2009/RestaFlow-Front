@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useDispatch } from 'react-redux'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { authApi } from '../api'
 import { setCredentials } from '../authSlice'
 import { saveSession } from '../session'
 import { ROLE_HOME } from '../../../constants/roles'
-import { resolveRedirect } from '../../../constants/navigation'
 import { connectSocket } from '../../../services/socket'
+import { useTheme } from '../../../hooks/useTheme'
+import LanguageSwitcher from '../../../components/common/LanguageSwitcher'
+import { Sun, Moon } from 'lucide-react'
 
 const schema = z.object({
   email: z.string().email("Email noto'g'ri formatda"),
@@ -77,11 +78,16 @@ export default function LoginPage() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
+  const { theme, toggleTheme } = useTheme()
   const [error, setError] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
-  const [remember, setRemember] = useState(false)
+  const [remember, setRemember] = useState(true)
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   })
@@ -92,9 +98,16 @@ export default function LoginPage() {
       const response = await authApi.login(values)
       const data = response.data?.data ?? response.data
       saveSession(data)
-      dispatch(setCredentials({ user: data.user, accessToken: data.accessToken, refreshToken: data.refreshToken }))
+      dispatch(
+        setCredentials({
+          user: data.user,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        }),
+      )
       connectSocket(data.accessToken)
-      navigate(resolveRedirect(location.state?.from, data.user?.role), { replace: true })
+      const targetHome = ROLE_HOME[data.user?.role] || '/dashboard'
+      navigate(targetHome, { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || 'Tizimga kirishda xatolik yuz berdi')
     }
@@ -103,7 +116,29 @@ export default function LoginPage() {
   return (
     <>
       <style>{animationStyles}</style>
-      <div className="flex h-screen w-full overflow-hidden bg-[#FFFDF9] dark:bg-[#0B0F17] font-sans">
+      <div className="relative flex h-screen w-full overflow-hidden bg-[#FFFDF9] dark:bg-[#0B0F17] font-sans">
+        {/* Top right quick controls */}
+        <div className="absolute right-4 top-4 z-50 flex items-center gap-2 sm:right-6 sm:top-6">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 px-3 py-2 text-xs font-bold text-slate-700 shadow-sm backdrop-blur-md transition-all hover:bg-orange-50 hover:text-[#F97316] dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-800"
+            title={theme === 'dark' ? "Yorqin rejim" : "Tungi rejim"}
+          >
+            {theme === 'dark' ? (
+              <>
+                <Moon className="h-4 w-4 text-indigo-400" />
+                <span className="hidden sm:inline">Tungi</span>
+              </>
+            ) : (
+              <>
+                <Sun className="h-4 w-4 text-amber-500" />
+                <span className="hidden sm:inline">Yorqin</span>
+              </>
+            )}
+          </button>
+          <LanguageSwitcher className="shadow-sm backdrop-blur-md bg-white/90 border border-slate-200 dark:bg-slate-900/90 dark:border-slate-800" />
+        </div>
 
         {/* LEFT HERO SECTION */}
         <div className="relative hidden w-[45%] lg:flex lg:flex-col lg:justify-between overflow-hidden">
@@ -148,14 +183,14 @@ export default function LoginPage() {
               className="max-w-lg rounded-3xl bg-black/50 p-6 backdrop-blur-sm"
               style={{ animation: 'fadeInUp 1s ease-out 0.4s both' }}
             >
-              <h1 className="text-4xl font-bold leading-tight xl:text-5xl" style={{ background: 'linear-gradient(135deg, #FFFFFF 0%, #F97316 50%, #FBBF24 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.5))' }}>
+              <h1 className="text-4xl font-bold leading-tight xl:text-5xl !text-white" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.5))' }}>
                 Restoraningizni boshqarishni{' '}
                 <span style={{ background: 'linear-gradient(135deg, #F97316 0%, #FBBF24 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', filter: 'drop-shadow(0 0 20px rgba(249,115,22,0.6))' }}>
                   osonlashtiramiz
                 </span>
               </h1>
               <p
-                className="mt-4 text-base leading-relaxed text-white/80"
+                className="mt-4 text-base leading-relaxed text-white/90"
                 style={{ animation: 'slideReveal 1.2s ease-out 0.8s both' }}
               >
                 Buyurtmalar, stol tizimi, oshxona boshqaruvi va hisobotlarni
@@ -188,9 +223,9 @@ export default function LoginPage() {
         </div>
 
         {/* RIGHT LOGIN CARD */}
-        <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
+        <div className="flex flex-1 items-center justify-center px-6 py-8 sm:px-10 lg:px-16 overflow-y-auto">
           <div
-            className="w-full max-w-[440px] rounded-[32px] bg-white dark:bg-[#1F2937] p-12 shadow-[0_25px_80px_rgba(0,0,0,0.08)]"
+            className="w-full max-w-[450px] rounded-[32px] bg-white dark:bg-[#1F2937] p-8 sm:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.08)] my-auto"
             style={{ animation: 'fadeInUp 0.8s ease-out 0.3s both' }}
           >
             {/* Tab */}

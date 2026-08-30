@@ -22,7 +22,7 @@ export default function ForbiddenPage() {
       </div>
       <Link
         to={home}
-        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+        className="rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25 transition-all hover:scale-105"
       >
         O'z panelimga qaytish
       </Link>

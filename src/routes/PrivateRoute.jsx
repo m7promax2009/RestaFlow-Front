@@ -55,8 +55,11 @@ export default function PrivateRoute() {
 
   if (!token) {
     clearSession()
-    const isErrorOrAuth = location.pathname === '/403' || location.pathname.startsWith('/login')
-    return <Navigate to="/login" state={isErrorOrAuth ? null : { from: location }} replace />
+    const isExcluded =
+      location.pathname === '/403' ||
+      location.pathname === '/profile' ||
+      location.pathname.startsWith('/login')
+    return <Navigate to="/login" state={isExcluded ? null : { from: location }} replace />
   }
 
   if (needsBootstrap && (isLoading || (!data && !isError))) {
@@ -64,8 +67,11 @@ export default function PrivateRoute() {
   }
 
   if (isError) {
-    const isErrorOrAuth = location.pathname === '/403' || location.pathname.startsWith('/login')
-    return <Navigate to="/login" state={isErrorOrAuth ? null : { from: location }} replace />
+    const isExcluded =
+      location.pathname === '/403' ||
+      location.pathname === '/profile' ||
+      location.pathname.startsWith('/login')
+    return <Navigate to="/login" state={isExcluded ? null : { from: location }} replace />
   }
 
   return <Outlet />

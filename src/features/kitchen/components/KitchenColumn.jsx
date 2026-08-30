@@ -47,19 +47,19 @@ export default function KitchenColumn({
   )
 
   return (
-    <div className="flex w-[85vw] shrink-0 flex-col rounded-3xl bg-[#F8FAFC] p-4 sm:p-5 border border-slate-200/90 shadow-2xs dark:bg-[#1E293B]/90 dark:border-slate-800/90 sm:w-full sm:min-w-0 transition-all">
-      <div className="mb-4 flex items-center justify-between gap-2 px-1 border-b border-slate-200/80 dark:border-slate-800 pb-3">
-        <div className="flex items-center gap-2.5">
+    <div className="flex w-full flex-col rounded-3xl bg-[#F8FAFC] p-3.5 sm:p-4 border border-slate-200/90 shadow-2xs dark:bg-[#1E293B]/90 dark:border-slate-800/90 transition-all">
+      <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800 pb-3">
+        <div className="flex items-center gap-2">
           <div className="flex size-7 items-center justify-center rounded-xl bg-white border border-slate-200 dark:bg-slate-900/40 dark:border-slate-700">
-            <span className={`size-3 rounded-full ${config.colorDot}`} />
+            <span className={`size-2.5 rounded-full ${config.colorDot}`} />
           </div>
-          <h3 className="font-display text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <ColumnIcon size={18} className="text-[#F97316]" />
-            {t(`kitchen.columns.${id}`)}
+          <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+            <ColumnIcon size={16} className="text-[#F97316]" />
+            <span>{t(`kitchen.columns.${id}`)}</span>
           </h3>
         </div>
-        <span className={`shrink-0 rounded-full border px-3 py-1 font-mono text-xs font-bold shadow-2xs ${config.badgeTone}`}>
-          {totalOrders} ta buyurtma · {totalDishes} ta taom
+        <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-bold shadow-2xs ${config.badgeTone}`}>
+          {totalOrders} ta ({totalDishes} taom)
         </span>
       </div>
 

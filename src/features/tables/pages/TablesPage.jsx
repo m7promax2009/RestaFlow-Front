@@ -636,7 +636,7 @@ export default function TablesPage() {
               label="Holat"
               value={form.status}
               onChange={setField('status')}
-              options={Object.values(TABLE_STATUS).map((s) => ({
+              options={TABLE_STATUS_LIST.map((s) => ({
                 value: s,
                 label: TABLE_STATUS_LABELS[s],
               }))}

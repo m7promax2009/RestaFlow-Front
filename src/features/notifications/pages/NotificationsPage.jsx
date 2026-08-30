@@ -39,9 +39,9 @@ export default function NotificationsPage() {
 
   return (
     <div className="p-2 sm:p-4">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E7EB] pb-4 dark:border-gray-800">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 pb-4 dark:border-slate-800">
         <div>
-          <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-[#111827] via-[#F97316] to-[#EA580C] bg-clip-text text-transparent dark:from-white dark:via-orange-400 dark:to-amber-400">
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Bildirishnomalar
           </h1>
           {unreadCount > 0 && (

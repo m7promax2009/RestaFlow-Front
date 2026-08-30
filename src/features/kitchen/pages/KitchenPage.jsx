@@ -89,7 +89,6 @@ export default function KitchenPage() {
               <RefreshCw className={`mr-2 h-4 w-4 text-[#F97316] ${isFetching ? 'animate-spin' : ''}`} />
               {t('refresh')}
             </Button>
-            <LanguageSwitcher />
           </div>
         }
       />
@@ -102,7 +101,7 @@ export default function KitchenPage() {
         </Card>
       )}
 
-      <div className="flex items-start gap-5 overflow-x-auto pb-2 lg:grid lg:grid-cols-3 lg:items-start lg:overflow-visible">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start w-full">
         {COLUMN_IDS.map((id) => (
           <KitchenColumn
             key={id}

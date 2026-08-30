@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { getUsers, createUser, updateUser } from '../api'
-import { ROLES, ROLE_LABELS } from '../../../constants/roles'
+import { ROLES, ROLE_LABELS, ROLE_LIST } from '../../../constants/roles'
 import { can } from '../../../constants/permissions'
 import { Input, Table, Button, Modal } from '../../../components/ui'
 import AttendanceTable from '../components/AttendanceTable'
@@ -118,7 +118,7 @@ export default function EmployeesPage() {
                         }
                         className="rounded-md border px-2 py-1 text-xs dark:bg-gray-700 dark:text-white"
                     >
-                        {Object.values(ROLES).map((role) => (
+                        {ROLE_LIST.map((role) => (
                             <option key={role} value={role}>
                                 {ROLE_LABELS[role]}
                             </option>
@@ -214,7 +214,7 @@ export default function EmployeesPage() {
                             className="rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
                         >
                             <option value="">Barcha rollar</option>
-                            {Object.values(ROLES).map((role) => (
+                            {ROLE_LIST.map((role) => (
                                 <option key={role} value={role}>
                                     {ROLE_LABELS[role]}
                                 </option>
@@ -273,7 +273,7 @@ export default function EmployeesPage() {
                                         className="w-full rounded-md border px-3 py-2 text-sm dark:bg-gray-700 dark:text-white"
                                     >
                                         <option value="">Rolni tanlang</option>
-                                        {Object.values(ROLES).map((role) => (
+                                        {ROLE_LIST.map((role) => (
                                             <option key={role} value={role}>
                                                 {ROLE_LABELS[role]}
                                             </option>
